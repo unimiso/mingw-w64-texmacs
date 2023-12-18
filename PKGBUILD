@@ -39,6 +39,8 @@ source=("${_pkgname}::svn://svn.savannah.gnu.org/texmacs/trunk/src"
         )
 sha1sums=('SKIP'
 		  )
+#source=("${_pkgname}::https://github.com/texmacs/texmacs.git")
+sha1sums=('SKIP')
 options=('!emptydirs' '!ccache' 'strip')
 provides=('texmacs')
 conflicts=('texmacs')
@@ -52,10 +54,17 @@ conflicts=('texmacs')
 prepare() {
   export TM_BUILD_DIR="${srcdir}/${_pkgname}-build"
   export BUNDLE_DIR="${srcdir}/distr/TeXmacs-Windows"
+
+  echo "TM_BUILD_DIR=${TM_BUILD_DIR}"
+  echo "srcdir=${srcdir}"
+
   cd "${srcdir}/../${_pkgname}"
+  echo "cwd=${srcdir}/../${_pkgname}"
+
   pkgver="svn$(svnversion)+extras"
   echo ${pkgver}
   echo ${pkgver} > SVNREV
+
   if [ -d $TM_BUILD_DIR ]; then
     rm -rf $TM_BUILD_DIR
   fi 
@@ -63,11 +72,21 @@ prepare() {
   # svn export "${srcdir}/${_pkgname}" $TM_BUILD_DIR
 
   cd $TM_BUILD_DIR
+  echo "cwd=$TM_BUILD_DIR"
 
-  patch -i ../../winsparkle_config.patch -p1
-#  patch -i ../../equation-editor-plugin.patch -p1
-  git --work-tree=. apply ../../my_current.patch #needed for binary file oxt
-  
+  echo "patching... winsparkle_config.patch"
+  if [ ! -f src/winsparkle_config.patch.applied ]; then
+    patch -i ../../winsparkle_config.patch -p1
+    touch src/winsparkle_config.patch.applied
+  fi
+
+  echo "patching... my_current.patch"
+  if [ ! -f src/TeXmacs-mingw-w64.patch.applied ]; then
+    git --work-tree=. apply ../../my_current.patch #needed for binary file oxt
+    # git --work-tree=. apply ../TeXmacs-mingw-w64.patch
+    touch src/TeXmacs-mingw-w64.patch.applied
+  fi
+
   if test ! -d TeXmacs/misc/updater_key ; then
     mkdir -p TeXmacs/misc/updater_key
   fi

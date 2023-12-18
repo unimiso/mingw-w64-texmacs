@@ -1,0 +1,2003 @@
+diff --git a/TeXmacs/doc/devel/scheme/api/glue-auto-doc.en.tm b/TeXmacs/doc/devel/scheme/api/glue-auto-doc.en.tm
+index 1095fcd9e..af3b9925e 100644
+--- a/TeXmacs/doc/devel/scheme/api/glue-auto-doc.en.tm
++++ b/TeXmacs/doc/devel/scheme/api/glue-auto-doc.en.tm
+@@ -1290,6 +1290,14 @@ source code.
+     <scm|array_double>.
+   </explain>
+ 
++  <\explain>
++    <scm|(cpp-gspdf2eps <scm-arg|url> <scm-arg|url>)>
++<explain-synopsis|no synopsis>
++  <|explain>
++    Calls the <c++> function <cpp|gs_to_eps> which returns
++    <scm|void>.
++  </explain>
++
+   <\explain>
+     <scm|(tree-\<gtr\>stree <scm-arg|tree>)>
+ <explain-synopsis|no synopsis>
+@@ -8587,7 +8595,7 @@ source code.
+   </explain>
+ 
+   <\explain>
+-    <scm|(print-snippet <scm-arg|url> <scm-arg|content> <scm-arg|bool>)>
++    <scm|(cpp-print-snippet <scm-arg|url> <scm-arg|content> <scm-arg|bool> <scm-arg|double>)>
+ <explain-synopsis|no synopsis>
+   <|explain>
+     Calls the <c++> function <cpp|print_snippet> which returns
+diff --git a/TeXmacs/doc/main/convert/html/man-html.en.tm b/TeXmacs/doc/main/convert/html/man-html.en.tm
+index 7f00f94f6..a8b14a877 100644
+--- a/TeXmacs/doc/main/convert/html/man-html.en.tm
++++ b/TeXmacs/doc/main/convert/html/man-html.en.tm
+@@ -5,29 +5,58 @@
+ <\body>
+   <tmdoc-title|Converters for <name|Html> and <name|MathML>>
+ 
+-  <paragraph|<name|Html generation>>
++  <paragraph|<name|Html> generation>
+ 
+   <TeXmacs> supports reasonably good converters to <name|Html> and
+   <name|MathML>. A document can be exported to <name|Html> using
+-  <menu|File|Export|Html>. <TeXmacs> makes moderate use of <name|Css> in
+-  order to improve the presentation of the generated <name|Html>.
+-
+-  By default, <TeXmacs> does its best in order to render formulas using
+-  existing <name|Html>/<name|Css> primitives. When selecting
+-  <menu|Edit|Preferences|Converters|TeXmacs-\<gtr\>Html|Use MathML>, all
+-  formulas will be exported as <name|MathML>. Notice that this requires you
+-  to save the generated documents using the <verbatim|.xhtml> extension.
+-
+-  Similarly, the user may force <TeXmacs> to export all mathematical formulas
+-  as images using <menu|Edit|Preferences|Converters|TeXmacs-\<gtr\>Html|Export
+-  formulas as images>. If your destination file is called
+-  <verbatim|name.html>, then the images are stored in the same directory in
+-  files <verbatim|name-1.png>, <rigid|<verbatim|name-2.png>> and so on. Even
+-  when formulas are not exported as images, notice that all graphics drawn
+-  using <TeXmacs> are exported in this way. In particular, the exportation of
+-  a <TeXmacs> file with pictures may give rise to the creation of additional
+-  image files. You may also force arbitrary content to be exported as an
+-  image using <menu|Format|Specific|Image>.
++  <menu|File|Export|Html>.\ 
++
++  <subparagraph|Use of <name|Css>>
++
++  The use of <name|Css> can be controled by the
++  <menu|Edit|Preferences|Converters|TeXmacs-\<gtr\>Html|Use CSS for advanced
++  formatting>, and a custom style sheet can be selected.\ 
++
++  <subparagraph|handling of mathematical content>
++
++  The preference panel <menu|Edit|Preferences|Converters|TeXmacs-\<gtr\>Html>
++  offers three different ways to export mathematical formulas to <name|Html>:\ 
++
++  <\itemize-minus>
++    <item>As images (default setting). <TeXmacs> will export all mathematical
++    formulas as images. If your destination file is called
++    <verbatim|name.html>, then the images are stored in the same directory in
++  files <verbatim|name-1.png>, <rigid|<verbatim|name-2.png>> and so on.
++
++    <item>As <name|MathML>. With this setting \ all formulas are converted to
++    <name|MathML>.\ 
++
++    <item>As <name|MathJax>. With this setting all formulas are converted to
++    <LaTeX>, and set to be rendered by <name|MathJax>.
++  </itemize-minus>
++
++  These different options result in slight styling differences of the
++  formulas in web browsers. If deviations from <TeXmacs> on-screen rendering
++  are not acceptable, use the image option.\ 
++
++  <subparagraph|handling of images>
++
++  All images linked or included in the original <TeXmacs> document and all
++  graphics drawn using <TeXmacs> become external image files linked in the
++  <name|Html> document. These linked images are in <verbatim|png> format,
++  except when the image's original format is accepted in <name|Html>
++  (<verbatim|gif>, <verbatim|jpeg>, <verbatim|png>, <verbatim|bmp> or
++  <verbatim|svg>), in which case the original image is used. Images that get
++  generated during the export are named automatically (with the same naming
++  scheme used for the formulas images, see above) and saved along side the
++  <name|Html> document. The resolution of the png images that get generated
++  during export is controled by <menu|Edit|Preferences|Converters|TeXmacs
++  -\<gtr\> image|Bitmap export resolution (dpi)>.
++
++  You may also force arbitrary content to be exported as an image using
++  <menu|Format|Specific|Image>.
++
++  <paragraph|Website creation>
+ 
+   <TeXmacs> also provides a facility for the creation of entire websites. For
+   this, you just have to regroup the files for your website into a single
+@@ -137,4 +166,4 @@
+ </body>
+ 
+ <initial|<\collection>
+-</collection>>
+\ No newline at end of file
++</collection>>
+diff --git a/TeXmacs/misc/pixmaps/modern/32x32/settings/tm_plugins_prefs.xpm b/TeXmacs/misc/pixmaps/modern/32x32/settings/tm_plugins_prefs.xpm
+new file mode 100644
+index 000000000..747661dec
+--- /dev/null
++++ b/TeXmacs/misc/pixmaps/modern/32x32/settings/tm_plugins_prefs.xpm
+@@ -0,0 +1,90 @@
++/* XPM */
++static char *plugins_prefs[] = {
++/* columns rows colors chars-per-pixel */
++"32 32 52 1 ",
++"  c gray50",
++". c #808080",
++"X c #818181",
++"o c gray51",
++"O c #838383",
++"+ c #848484",
++"@ c gray52",
++"# c #868686",
++"$ c gray53",
++"% c #888888",
++"& c gray54",
++"* c gray55",
++"= c #8D8D8D",
++"- c #8E8E8E",
++"; c gray56",
++": c gray57",
++"> c #929292",
++", c #939393",
++"< c #959595",
++"1 c #979797",
++"2 c #989898",
++"3 c gray60",
++"4 c #9A9A9A",
++"5 c #9B9B9B",
++"6 c #9D9D9D",
++"7 c gray64",
++"8 c #A4A4A4",
++"9 c #A5A5A5",
++"0 c gray65",
++"q c #A7A7A7",
++"w c #A9A9A9",
++"e c #AAAAAA",
++"r c gray67",
++"t c #ACACAC",
++"y c gray68",
++"u c #AEAEAE",
++"i c #AFAFAF",
++"p c gray69",
++"a c #B2B2B2",
++"s c #B4B4B4",
++"d c gray71",
++"f c #B6B6B6",
++"g c #B7B7B7",
++"h c gray72",
++"j c #B9B9B9",
++"k c #BBBBBB",
++"l c #BCBCBC",
++"z c gray74",
++"x c gray",
++"c c gray75",
++"v c #C0C0C0",
++"b c None",
++/* pixels */
++"bbbbb.bbbbbb.bbbbbbbbbbbbbbbbbbb",
++"bbbb.#.bbb..#.bbbbbbbbbbbbbbbbbb",
++"bbb.*c%.bb.<c.bbbbbbbbbbbbbbbbbb",
++"bbb.:v*.bb#6v..bbbbbbbbbbbbbbbbb",
++"bbb.*v*.bb.4v..bbbbbbbbbbbbbbbbb",
++"bbb.:v*.bb#4v..bbbbbbbbbbbbbbbbb",
++"bbb.*v*.bb.6v..bbbbbbbbbbbbbbbbb",
++"b...:v*....6v.  .bbbbbbbbbbbbbbb",
++".%aasvaiiiisvaii.bbbbbbbbbbbbbbb",
++".*ccvvvvvvvvvvcc.bbbbbbbbbbbbbbb",
++".*vvvvvvvvvvvvvc.bbbbbbbbbbbbbbb",
++".*vvvvvvvvvvvvvc.bbbbbbbbbbbbbbb",
++".*vvvvvvvvvvvvvc.bbbbbbbbbbbbbbb",
++".%vvvvvvvvvvvvch.bbbbbbbbbbbbbbb",
++"b.cvvvvvvvvvvvvi.bbbbbbbbbbbbbbb",
++"b.7vvvvvvvvvvvv<.bbbbbbbbbbbbbbb",
++"b.#hvvvvvvvvvvi.bbbbbb....     b",
++"bb.*cvvvvvvvva#.bbbbb..49eieei<.",
++"bbb.%ivvvvvv9..bbbb..<cvvvvvvv7.",
++"bbbb..%6ch4%..bbbbb.4vh4# ......",
++"bbbbbb..hi  bbbbbb.%ch%..bbbbbbb",
++"bbbbbbb.ci.bbbbbbb.9v:.bbbbbbbbb",
++"bbbbbbb hi.bbbbbbb.ss.bbbbbbbbbb",
++"bbbbbbb ci.bbbbbbb.ci.bbbbbbbbbb",
++"bbbbbbb.ss.bbbbbb.%v9.bbbbbbbbbb",
++"bbbbbbb.9v%.bbbbb.4v4.bbbbbbbbbb",
++"bbbbbbb.*ce .bbb.#ch# bbbbbbbbbb",
++"bbbbbbbb.9ve#...*hv<.bbbbbbbbbbb",
++"bbbbbbbb..evhiisvv6.bbbbbbbbbbbb",
++"bbbbbbbbb..:icvh9%..bbbbbbbbbbbb",
++"bbbbbbbbbbb.......bbbbbbbbbbbbbb",
++"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
++};
+diff --git a/TeXmacs/misc/pixmaps/modern/32x32/settings/tm_prefs_plugins.svg b/TeXmacs/misc/pixmaps/modern/32x32/settings/tm_prefs_plugins.svg
+new file mode 100644
+index 000000000..07302ffd2
+--- /dev/null
++++ b/TeXmacs/misc/pixmaps/modern/32x32/settings/tm_prefs_plugins.svg
+@@ -0,0 +1,35 @@
++<?xml version="1.0" encoding="UTF-8" standalone="no"?>
++<svg
++   xmlns:dc="http://purl.org/dc/elements/1.1/"
++   xmlns:cc="http://creativecommons.org/ns#"
++   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
++   xmlns:svg="http://www.w3.org/2000/svg"
++   xmlns="http://www.w3.org/2000/svg"
++   width="32px"
++   height="32px"
++   id="svg5078"
++   version="1.1">
++  <metadata
++     id="metadata856">
++    <rdf:RDF>
++      <cc:Work
++         rdf:about="">
++        <dc:format>image/svg+xml</dc:format>
++        <dc:type
++           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
++        <dc:title></dc:title>
++      </cc:Work>
++    </rdf:RDF>
++  </metadata>
++  <defs
++     id="defs5080" />
++  <g
++     id="g4"
++     style="fill:#c0c0c0;fill-opacity:1;stroke:#808080;stroke-width:24.1333;stroke-opacity:1"
++     transform="matrix(0.0621549,0,0,0.0621549,1.0331262,0.69944239)">
++    <path
++       d="m 489.8,280.92 c 0,-13.9 -11.3,-25.2 -25.2,-25.2 h -74.1 c -62.1,0 -112.4,50.2 -112.7,112.2 -0.1,32.3 -23,61 -55,65 -38.4,4.8 -71.2,-25.2 -71.2,-62.6 v -56.4 c 57.6,-11.7 101,-62.6 101,-123.7 v -64 c 0,-9.1 -7.3,-16.4 -16.4,-16.4 h -31.3 v -79.1 c 0,-12.4 -9,-23.4 -21.3,-24.6 -14.1,-1.4 -26,9.7 -26,23.6 v 80.1 H 95.2 v -79.1 c 0,-12.4 -9,-23.4 -21.4,-24.6 -14.1,-1.3 -26,9.7 -26,23.6 v 80.1 H 16.4 c -9.1,0 -16.4,7.3 -16.4,16.4 v 64 c 0,61.1 43.4,112 101,123.7 v 53.5 c 0,61.5 47.7,114 109.2,116.3 64.6,2.4 118,-49.4 118,-113.5 v -0.9 c 0,-34.9 28.3,-63.1 63.1,-63.1 h 73.2 c 14,-0.1 25.3,-11.4 25.3,-25.3 z"
++       id="path2"
++       style="fill:#c0c0c0;fill-opacity:1;stroke:#808080;stroke-width:24.1333;stroke-opacity:1" />
++  </g>
++</svg>
+diff --git a/TeXmacs/progs/convert/html/init-html.scm b/TeXmacs/progs/convert/html/init-html.scm
+index 3c2cea952..818c14b70 100644
+--- a/TeXmacs/progs/convert/html/init-html.scm
++++ b/TeXmacs/progs/convert/html/init-html.scm
+@@ -67,4 +67,5 @@
+   (:option "texmacs->html:mathjax" "off")
+   (:option "texmacs->html:mathml" "off")
+   (:option "texmacs->html:images" "on")
++  (:option "texmacs->html:svg" "off")
+   (:option "texmacs->html:css-stylesheet" "---"))
+diff --git a/TeXmacs/progs/convert/html/tmhtml.scm b/TeXmacs/progs/convert/html/tmhtml.scm
+index 3d56aaad4..023d2956b 100644
+--- a/TeXmacs/progs/convert/html/tmhtml.scm
++++ b/TeXmacs/progs/convert/html/tmhtml.scm
+@@ -32,6 +32,7 @@
+ (define tmhtml-mathjax? #f)
+ (define tmhtml-mathml? #f)
+ (define tmhtml-images? #f)
++(define tmhtml-svg? #f)
+ (define tmhtml-image-serial 0)
+ (define tmhtml-image-cache (make-ahash-table))
+ (define tmhtml-image-root-url (unix->url "image"))
+@@ -49,6 +50,9 @@
+ 	(== (assoc-ref opts "texmacs->html:mathml") "on"))
+   (set! tmhtml-images?
+ 	(== (assoc-ref opts "texmacs->html:images") "on"))
++  (set! tmhtml-svg?
++	(and (== (assoc-ref opts "texmacs->html:svg") "on")
++  (file-converter-exists? "x.pdf" "y.svg")))
+   (set! tmhtml-image-cache (make-ahash-table))
+   (let* ((suffix (url-suffix current-save-target))
+ 	 (n (+ (string-length suffix) 1)))
+@@ -798,7 +802,7 @@
+   `("not(" ,@(tmhtml (car l)) ")"))
+ 
+ (define (tmhtml-tree l)
+-  (tmhtml-png `(tree ,@l)))
++  (tmhtml-img `(tree ,@l)))
+ 
+ (define (tmhtml-syntax l)
+   (tmhtml (car l)))
+@@ -1016,7 +1020,7 @@
+   (cond ((null? l) '())
+ 	((null? (cdr l)) (tmhtml (car l)))
+ 	((null? (cddr l)) '())
+-	((func? (cAr l) 'graphics) (tmhtml-png (cons 'with l)))
++	((func? (cAr l) 'graphics) (tmhtml-img (cons 'with l)))
+ 	(else
+ 	 (let* ((var (tmhtml-force-string (car l)))
+ 		(val (tmhtml-force-string (cadr l)))
+@@ -1301,11 +1305,17 @@
+ (define (magic-png-number)
+   (let* ((css (get-preference "texmacs->html:css-stylesheet"))
+          (s (url->string (url-tail css))))
+-    (if (string-starts? s "web-") 19000.0 20625.0)))
++    (if (string-starts? s "web-") 19000.0 20625.0))) ; rationale?
+ 
+ (define (tmhtml-png y)
+   ;; converts generic markup that can be displayed on screen to png format
+-  (let* ((mag (ahash-ref tmhtml-env :mag))
++  (tmhtml-img y "png"))
++  
++(define (tmhtml-img y . fmt)
++  ;; converts generic markup that can be displayed on screen to png or svg format
++  (let* ((suf (if (null? fmt) (if tmhtml-svg? "svg" "png")
++                (car fmt)))
++         (mag (ahash-ref tmhtml-env :mag))
+ 	 (x (if (or tmhtml-css? (nstring? mag) (== mag "1")) y
+                 (with nmag `(times (value "magnification") ,mag)
+                   `(with "magnification" ,nmag ,y))))
+@@ -1313,11 +1323,11 @@
+ 	 (l2 (if (null? l1) l1 (list (car l1)))))
+     (with cached (ahash-ref tmhtml-image-cache x)
+       (if (not cached)
+-	  (receive (name-url name-string) (tmhtml-image-names "png")
++	  (receive (name-url name-string) (tmhtml-image-names suf)
+ 	    ;;(display* x " -> " name-url ", " name-string "\n")
+ 	    (let* ((extents (print-snippet name-url x #t))
+-                   (m (magic-png-number))
+-                   (unit (/ 6000.0 (* (ninth extents) (tenth extents) m)))
++	         (m (magic-png-number))
++             (unit (/ 6000.0 (* (ninth extents) (tenth extents) m)))
+ 		   (x3 (* (first extents) unit))
+ 		   (y3 (* (second extents) unit))
+ 		   (x4 (* (third extents) unit))
+@@ -1350,13 +1360,13 @@
+ 	  cached))))
+ 
+ (define (tmhtml-graphics l)
+-  (tmhtml-png (cons 'graphics l)))
++  (tmhtml-img (cons 'graphics l)))
+ 
+ (define (tmhtml-draw-over l)
+-  (tmhtml-png (cons 'draw-over l)))
++  (tmhtml-img (cons 'draw-over l)))
+ 
+ (define (tmhtml-draw-under l)
+-  (tmhtml-png (cons 'draw-under l)))
++  (tmhtml-img (cons 'draw-under l)))
+ 
+ (define (tmhtml-image-suffix name)
+   (cond ((string? name) (url-suffix name))
+@@ -1874,7 +1884,7 @@
+ 		   ,(texmacs->mathml x tmhtml-env))))
+ 	((and tmhtml-images? (ahash-ref tmhtml-env :math)
+               (!= tmhtml-image-root-string "image"))
+-         (tmhtml-png `(with "mode" "math" ,x)))
++         (tmhtml-img `(with "mode" "math" ,x)))
+ 	((string? x)
+ 	 (if (string-null? x) '() (tmhtml-text x))) ; non-verbatim string nodes
+ 	(else (or (tmhtml-dispatch 'tmhtml-primitives% x)
+diff --git a/TeXmacs/progs/convert/images/init-images.scm b/TeXmacs/progs/convert/images/init-images.scm
+index 8115eebc4..c1aa5abbd 100644
+--- a/TeXmacs/progs/convert/images/init-images.scm
++++ b/TeXmacs/progs/convert/images/init-images.scm
+@@ -17,24 +17,84 @@
+ ;; Helper functions for testing available converters
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
++(define inkscape-check -1)
++(define gs-check -1)
++(define rsvg-check -1)
++
++(define (imagemagick-binary)
++  (if (os-mingw?) "magick" ;; avoid collision with Windows native command (imagemagick v>=7.0)
++       "convert"))
++
+ (tm-define (has-convert?)
+-  (and (not (os-mingw?)) ;; avoid name collision wrt Windows native command
+-       (url-exists-in-path? "convert")))
++  (url-exists-in-path? (imagemagick-binary)))
+ 
+ (tm-define (has-pdftocairo?)
+   (url-exists-in-path? "pdftocairo"))
+ 
+-(tm-define (gs-binary)
+-  (let* ((n1 "$TEXMACS_PATH\\bin\\gs.exe;c:\\Program F*\\gs\\gs*\\gswin*c.exe")
++(tm-define (has-inkscape?)
++  (if (== inkscape-check -1)
++          (with ans (and (url-exists-in-path? "inkscape")
++                     (test-version-num "inkscape -V" "Inkscape " 0 92))
++             (set! inkscape-check (if ans 1 0))
++             ans)
++        (> inkscape-check 0)))
++
++
++(tm-define (has-rsvg-convert?)
++  (if (== rsvg-check -1)
++          (with ans (and (url-exists-in-path? "rsvg-convert")
++                    (test-version-num "rsvg-convert -v" "version " 2 40))
++             (set! rsvg-check (if ans 1 0))
++             ans)
++        (> rsvg-check 0)))
++
++(define (gs-url)
++   (let* ((n1 "$TEXMACS_PATH\\bin\\gs.exe;c:\\Program F*\\gs\\gs*\\gswin*c.exe")
+          (n2 "$TEXMACS_PATH/bin/gs:gs")
+          (name (if (os-mingw?) n1 n2)))
+-    (url->system (url-resolve-in-path name))))
++         (url->system (url-resolve-in-path name))))
++
++(define (gs-binary)
++    (escape-shell (gs-url)))
+ 
+ (tm-define (has-gs?)
+-  (url-exists? (gs-binary)))
++  (if (== gs-check -1)
++        (with ans (and (url-exists? (gs-url))
++                  (test-version-num (string-append (gs-binary) " --version") "" 9 26))
++; because of bug #61991, but maybe a good idea to require even more recent gs (9.50?)
++; see https://www.cvedetails.com/product/36469/Artifex-Ghostscript.html?vendor_id=10846
++          (set! gs-check (if ans 1 0))
++          (if ans #t
++           (begin
++              (debug-message "debug-convert" "No Ghostscript for Scheme converters\n")
++            #f)))
++      (> gs-check 0)))
++
++(define (test-version-num cmd key major minor)
++;tests if program reports version >=  major.minor
++  (with a (eval-system cmd)
++    (if (string-null? a)
++      #f
++      (with st (if (string-null? key)
++               0 (string-search-forwards key 0 a))
++        (if (== st -1)
++          #f
++          (let*
++            ((a (substring a (+ st (string-length key))))
++             (a (car (string-split a #\space)))
++             (a (string-split a #\.))
++             (v1 (string->number (first a)))
++             (v2 (string->number (second a))))
++            (if (or (> v1 major) (and (== v1 major) (>= v2 minor)))
++              #t
++              (begin
++                (debug-message "debug-convert" (string-append cmd " reports version " (first a) "." (second a)
++                 ";\nTeXmacs will not use it as a converter.\n
++                 (minimun required version is " (number->string major) "." (number->string minor) ")\n"))
++                #f))))))))
+ 
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+-;; Helper functions for conversions
++;; Helpers and function-with-option(s) for converters
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+ (define-preferences
+@@ -49,61 +109,145 @@
+       (escape-shell (url-concretize (url-resolve-in-path cmd)))))
+ 
+ (tm-define (rsvg-convert x opts)
+-  (let* ((dest (assoc-ref opts 'dest))
+-         (fm (url-format (url-concretize dest)))
++  ;(display* "scm rsvg-convert " x opts "\n")
++  (let* ((last? (assoc-ref opts 'last?))
++         (fm (format-default-suffix (assoc-ref opts 'to-format)))
++         (fm (if (== fm "ps") "eps" fm))
++         (dest (if last? (assoc-ref opts 'dest)
++               (url-glue (url-temp) (string-append "." fm))))
+          (res (get-raster-resolution opts))
+-	 (cmd (get-shell-command "rsvg-convert")))
+-    (system-2 (string-append cmd " -f " fm " -d " res " -o ") dest x)
++         (w (assoc-ref opts 'width)) ; width for export
++         (wstr (if w (string-append " -w "  w) ""))
++         (h (assoc-ref opts 'height))
++         (hstr (if h (string-append " -h "  h) ""))
++         (dstr (if (or (in? fm '("eps" "pdf")) h w) "" (string-append " -d " res)))
++         (cmd (string-append (get-shell-command "rsvg-convert")
++               " -f " fm wstr hstr dstr " -o ")))
++    ;(display* cmd dest " " x "\n")
++    (system-2 cmd dest x)
++    (if (url-exists? dest) dest #f)))
++
++(tm-define (inkscape-convert x opts)
++  ;(display* "scm inkscape-convert " x opts "\n")
++  (let* ((last? (assoc-ref opts 'last?))
++         (fm (format-default-suffix (assoc-ref opts 'to-format)))
++         (fm (if (== fm "ps") "eps" fm))
++         (dest (if last? (assoc-ref opts 'dest)
++               (url-glue (url-temp) (string-append "." fm))))
++         (fullname (url-concretize dest))
++         (res (get-raster-resolution opts))
++         (w (assoc-ref opts 'width)) ; width in pixels for raster export
++         (wstr (if w (string-append " -w "  w) ""))
++         (h (assoc-ref opts 'height))
++         (hstr (if h (string-append " -h "  h) ""))
++         (dstr (if (or h w) "" (string-append " -d " res)))
++         (cmd (string-append (get-shell-command "inkscape")
++               " --export-overwrite --pdf-poppler -l --export-type=" fm
++               hstr wstr dstr " -o ")))
++    ;(display* cmd dest " " x "\n")
++    (system-2 cmd dest x)
+     (if (url-exists? dest) dest #f)))
+ 
+ (tm-define (pdf-file->pdftocairo-raster x opts)
+-  (let* ((dest (assoc-ref opts 'dest))
++  ;(display* "scm pdf-file->pdftocairo-raster " x opts "\n")
++  (let* ((last? (assoc-ref opts 'last?))
++         (fm (format-default-suffix (assoc-ref opts 'to-format)))
++         (fm (if (== fm "ps") "eps" fm))
++         (dest (if last? (assoc-ref opts 'dest)
++               (url-glue (url-temp) (string-append "." fm))))
+          (fullname (url-concretize dest))
+-         (fm (url-format fullname))
+-         (transp (if (== fm "png") "-transp " ""))
+          (suffix (url-suffix fullname))
+          (name (string-drop-right fullname (+ 1 (string-length suffix))))
++         (transp (if (== fm "png") "-transp " ""))
++         (w (assoc-ref opts 'width)) ; width in pixels for raster export
++         (wstr (if w (string-append " -scale-to-x "  w) ""))
++         (h (assoc-ref opts 'height))
++         (hstr (if h (string-append " -scale-to-y "  h) ""))
+          (res (get-raster-resolution opts))
+-	 (cmd (get-shell-command "pdftocairo")))
+-    ;;(display (string-append cmd " -singlefile " transp "-" fm " -r " res " " x " "  name))
+-    (system-2 (string-append cmd " -singlefile " transp "-" fm " -r " res)
+-	      x name)
++         (dstr (if (or h w) "" (string-append " -r " res)))
++         (cmd (string-append (get-shell-command "pdftocairo")" -singlefile " transp "-" fm
++               hstr wstr dstr)))
++    ;(display cmd " " x " "  name)
++    (system-2 cmd x name)
+     (if (url-exists? dest) dest #f)))
+ 
+-(tm-define (pdf-file->imagemagick-raster x opts)
+-  (let* ((dest (assoc-ref opts 'dest))
++(tm-define (imagemagick-any->raster x opts)
++   ;(display* "scm imagemagick-any->raster " x opts "\n")
++  (let* ((last? (assoc-ref opts 'last?))
++         (fm (format-default-suffix (assoc-ref opts 'to-format)))
++         (dest (if last? (assoc-ref opts 'dest)
++               (url-glue (url-temp) (string-append "." fm))))
++         (orig (url-concretize x))
++         (w (assoc-ref opts 'width)) ; width in pixels
++         (h (assoc-ref opts 'height))
++         (geom (if (or w h) (string-append " -resize "  w "x" h "!") ""))
+          (res (get-raster-resolution opts)))
+-    ;;(display (string-append "convert -density " res " " x " "  dest))
+-    (system-2 (string-append "convert -density " res) x dest)
+-    ;; NOTE: changing the resolution to 300 (the default) causes a problem
+-    ;; when converting TeXmacs documents to Html with formulas as images:
+-    ;; the formulas appear way too large...
+-    ;;(system-2 (string-append "convert ") x dest)
++    ;(display (string-append (get-shell-command (imagemagick-binary)) " -density " res " " orig " " geom " "  dest "\n"))
++    (system-1 (string-append (get-shell-command (imagemagick-binary)) " -density " res " " orig " " geom) dest)
+     (if (url-exists? dest) dest #f)))
+ 
+-(tm-define (gs-convert x opts)
+-  ;; many options for pdf->ps/eps see http://tex.stackexchange.com/a/20884
+-  ;; this one does a better rendering than pdf2ps (also based on gs):
+-  (let* ((dest (assoc-ref opts 'dest))
+-	 (gs (gs-binary)))
+-    (system-2 (string-append gs " -q -dNOCACHE -dUseCropBox -dNOPAUSE -dBATCH -dSAFER -sDEVICE=eps2write -sOutputFile=") dest x))
+-  ;; problem: 
+-  ;; eps2write available starting with gs  9.14 (2014-03-26)
+-  ;; epswrite removed in gs 9.16 (2015-03-30)
++(tm-define (gs-pdf2eps x opts)
++  ;(display* "scm gs-pdf2eps " x opts "\n")
++  (let* ((last? (assoc-ref opts 'last?))
++         (dest (if last? (assoc-ref opts 'dest)
++               (url-glue (url-temp) (string-append ".eps")))))
++        (cpp-gspdf2eps x dest)
++  ;; the converter in c++ properly keeps the bounding box, unlike the previous code
++    (if (url-exists? dest) dest #f))
++  )
++
++(tm-define (gs-ps2pdf x opts)
++  (display* "scm gs-ps2pdf " x opts "\n")
++  (let* ((last? (assoc-ref opts 'last?))
++         (dest (if last? (assoc-ref opts 'dest)
++               (url-glue (url-temp) (string-append ".pdf"))))
++         (pdfv (get-preference "texmacs->pdf:version"))
++         (pdfv (if (== pdfv "default") "1.4" pdfv))
++         (cmd (string-append (gs-binary) " -dQUIET -dNOPAUSE -dBATCH -dSAFER -sDEVICE=pdfwrite "
++                " -dUseCropBox -dFitPage -dAutoRotatePages=/None "
++                " -dCompatibilityLevel=" pdfv
++                " -sOutputFile=" (url-sys-concretize dest)
++                " -f " (url-sys-concretize x))))
++    (display* cmd "\n")
++    (display* (eval-system cmd) "\n")
++    (if (url-exists? dest) dest #f))
+   )
+ 
+ (tm-define (pdf-file->gs-raster x opts)
+-  (let* ((dest (assoc-ref opts 'dest))
++  ;(display* "scm pdf-file->gs-raster " x opts "\n")
++  (let* ((last? (assoc-ref opts 'last?))
++         (fm (format-default-suffix (assoc-ref opts 'to-format)))
++         (dev (cond ((== fm "jpg") "jpeg")
++                    ((== fm "tif") "tiff24nc")
++                    (else "pngalpha")))
++         (dest (if last? (assoc-ref opts 'dest)
++               (url-glue (url-temp) (string-append "." fm))))
+          (res (get-raster-resolution opts))
+-	 (gs (gs-binary)))
+-    (evaluate-system (list gs "-dBATCH" "-dNOPAUSE" "-dQUIET" "-dSAFER"
+-                           "-dNOPROMPT" "-sDEVICE=pngalpha"
+-                           (string-append "-r" res)
+-                           (string-append "-sOutputFile="
+-                                          (url-concretize dest))
+-                           (url-concretize x)) '() '() '(1 2))
+-    (if (url-exists? dest) dest #f)))
++         (w (assoc-ref opts 'width)) ; width in pixels
++         (h (assoc-ref opts 'height))
++         (gs (gs-binary))
++         (cl (list gs " -dBATCH" " -dNOPAUSE" " -dSAFER"
++                           " -dNOPROMPT" (string-append " -sDEVICE=" dev) " -dUseCropBox"))
++         (cl (if (and w h) (append cl `(" -dPDFFitPage" ,(string-append " -g" w "x" h)) )
++                           (rcons cl (string-append " -r" res))  ))
++         (cl (append cl `(,(string-append " -sOutputFile=" (url-sys-concretize dest))
++                           ,(string-append " " (url-sys-concretize x)))))
++         (cmd (apply string-append cl)))
++    ;(display* cl "\n")
++    ;(evaluate-system cl '() '() '(1 2)) ;for some reason this gives non-zero return code in Windows
++    (with ans (eval-system cmd)
++      (if (url-exists? dest) dest
++        (begin (debug-message "debug-convert" (string-append "pdf-file->gs-raster failed\n"
++                 "command: " cmd "\n"
++                 "produced output: " ans "\n"))
++           #f)))))
+ 
++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
++;; Formats and converters
++;; Note : Multiple converters can be defined for a given conversion
++;; (e.g. pdftocairo and pdf2svg for pdf -> svg). In that case,
++;; TeXmacs will use the latest defined converter that is available on the system
++;; => converters defined in my-init-texmacs.scm override similar ones defined here.
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Graphical document and geometric image formats
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+@@ -116,66 +260,77 @@
+   (:name "Pdf")
+   (:suffix "pdf"))
+ 
+-;;(converter pdf-file postscript-file
+-;;  (:require (url-exists-in-path? "pdf2ps"))
+-;;  (:shell "pdf2ps" from to))
+-
+ (converter pdf-file postscript-file
+-  (:require (or (os-mingw?) (url-exists-in-path? "gs")))
+-  (:function-with-options gs-convert))
++  (:require (has-gs?))
++  (:function-with-options gs-pdf2eps))
+ 
+ (converter postscript-file pdf-file
+-  (:require (url-exists-in-path? "ps2pdf"))
+-  (:shell "ps2pdf" from to))
++  ;(:require (url-exists-in-path? "ps2pdf"))
++  ;(:shell "ps2pdf" from to))
++  (:require (has-gs?))
++  (:function-with-options gs-ps2pdf))
+ 
+ (define-format xfig
+   (:name "Xfig")
+   (:suffix "fig"))
+ 
+-(converter xfig-file postscript-file
+-  (:shell "fig2ps" from to))
++;(converter xfig-file postscript-file
++;  (:shell "fig2ps" from to))
++  
++(converter xfig-file pdf-file
++  (:require (url-exists-in-path? "fig2pdf"))
++  (:shell "fig2pdf" from to))
+ 
+-(define-format xmgrace
+-  (:name "Xmgrace")
+-  (:suffix "agr" "xmgr"))
++; as of 2023 grace is still available in linux distors but it seems a dead project
++; there are now several other OSS Wysiwyg graphers
++;(define-format xmgrace
++;  (:name "Xmgrace")
++;  (:suffix "agr" "xmgr"))
+ 
+-(converter xmgrace-file postscript-file
+-  (:require (url-exists-in-path? "xmgrace"))
+-  (:shell "xmgrace" "-noask -hardcopy -hdevice EPS -printfile" to from))
++;(converter xmgrace-file postscript-file
++;  (:require (url-exists-in-path? "xmgrace"))
++;  (:shell "xmgrace" "-noask -hardcopy -hdevice EPS -printfile" to from))
+ 
+ (define-format svg
+    (:name "Svg")
+    (:suffix "svg"))
+ 
+-(converter svg-file postscript-file
+-  (:require (url-exists-in-path? "inkscape"))
+-  (:shell "inkscape" "-z" "-f" from "-P" to))
+-
+ (converter svg-file pdf-file
+-  (:require (url-exists-in-path? "inkscape"))
+-  (:shell "inkscape" "-z" "-f" from "-A" to))
++  (:require (has-rsvg-convert?))
++  (:function-with-options rsvg-convert))
+ 
+-(converter svg-file png-file
+-  (:require (url-exists-in-path? "inkscape"))
+-  (:shell "inkscape" "-z" "-d" "600" from "--export-png" to))
++;(converter svg-file postscript-file
++;  (:require (has-rsvg-convert?))
++;  (:function-with-options rsvg-convert))
+ 
+-(converter svg-file png-file
+-  (:require (and (url-exists-in-path? "rsvg-convert")
+-                 (not (url-exists-in-path? "inkscape"))))
+-    (:function-with-options rsvg-convert))
++;(converter svg-file postscript-file
++;  (:require (has-inkscape?))
++;  (:function-with-options inkscape-convert))
++
++(converter svg-file pdf-file
++  (:require (has-inkscape?))
++  (:function-with-options inkscape-convert))
+ 
+ (define-format geogebra
+   (:name "Geogebra")
+   (:suffix "ggb"))
+ 
+-(converter geogebra-file postscript-file
++(converter geogebra-file pdf-file
+   (:require (url-exists-in-path? "geogebra"))
+-  (:shell "geogebra" "--export=" to "--dpi=600" from))
++  (:shell "geogebra" "--export=" to from))
+ 
+-(converter geogebra-file svg-file
++(converter geogebra-file png-file
+   (:require (url-exists-in-path? "geogebra"))
+   (:shell "geogebra" "--export=" to "--dpi=600" from))
+ 
++(converter pdf-file svg-file
++  (:require (has-inkscape?))
++  (:function-with-options inkscape-convert))
++
++(converter pdf-file svg-file
++  (:require (url-exists-in-path? "pdf2svg"))
++  (:shell "pdf2svg" from to))
++
+ ;;(converter pdf-file postscript-document
+ ;;  (:require (has-pdftocairo?))
+ ;;  (:shell "pdftocairo" "-eps" from to))
+@@ -188,17 +343,9 @@
+   (:require (has-pdftocairo?))
+   (:shell "pdftocairo" "-origpagesizes -nocrop -nocenter -svg" from to))
+   
+-(converter pdf-file svg-file
+-  (:require (url-exists-in-path? "pdf2svg"))
+-  (:shell "pdf2svg" from to))
+-
+-(converter svg-file postscript-document
+-  (:require (qt5-or-later-gui?))
+-  (:function image->psdoc))
+- 
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Bitmap image formats
+-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+ (define-format xpm
+   (:name "Xpm")
+@@ -223,12 +370,16 @@
+   (:name "Tif")
+   (:suffix "tif" "tiff"))
+ 
+-(converter tif-file postscript-document
+-  (:function image->psdoc))
++;(converter tif-file postscript-document
++;  (:function image->psdoc))
+   
+ (converter tif-file png-file
+   (:require (has-convert?))
+   (:shell "convert" from to))
++  
++(converter tif-file pdf-file
++  (:require (has-convert?))
++  (:shell "convert" from to))
+ 
+ (define-format ppm
+   (:name "Ppm")
+@@ -253,12 +404,12 @@
+   (:name "Png")
+   (:suffix "png"))
+ 
+-(converter png-file postscript-document
+-  (:function image->psdoc))
++;(converter png-file postscript-document
++;  (:function image->psdoc))
+ 
+-(converter png-file pnm-file
+-  (:require (has-convert?))
+-  (:shell "convert" from to))
++;(converter png-file pnm-file
++;  (:require (has-convert?))
++;  (:shell "convert" from to))
+ 
+ (converter geogebra-file png-file
+   (:require (url-exists-in-path? "geogebra"))
+@@ -268,8 +419,24 @@
+   (:name "Pnm")
+   (:suffix "pnm"))
+ 
+-(converter pnm-file postscript-document
+-  (:function image->psdoc))
++;(converter pnm-file postscript-document
++;  (:function image->psdoc))
++
++(converter pnm-file png-file
++  (:require (has-convert?))
++  (:shell "convert" from to))
++
++(define-format webp
++  (:name "Webp")
++  (:suffix "webp"))
++
++(converter webp-file png-file
++  (:require (url-exists-in-path? "dwebp"))
++  (:shell "dwebp" from "-o" to))
++
++(converter png-file webp-file
++  (:require (url-exists-in-path? "cwebp"))
++  (:shell "cwebp" from "-o" to))
+ 
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; From vector graphics to bitmaps
+@@ -277,21 +444,15 @@
+ 
+ (converter pdf-file png-file
+   (:require (has-convert?))
+-  (:function-with-options pdf-file->imagemagick-raster)
+-  ;;(:option "texmacs->image:raster-resolution" "300")
+-  )
++  (:function-with-options imagemagick-any->raster))
+   
+ (converter pdf-file jpeg-file
+   (:require (has-convert?))
+-  (:function-with-options pdf-file->imagemagick-raster)
+-  ;;(:option "texmacs->image:raster-resolution" "300")
+-  )
++  (:function-with-options imagemagick-any->raster))
+  
+-(converter pdf-file tif-file
+-  (:require (has-convert?))
+-  (:function-with-options pdf-file->imagemagick-raster)
+-  ;;(:option "texmacs->image:raster-resolution" "300")
+-  )
++;(converter pdf-file tif-file
++;  (:require (has-convert?))
++;  (:function-with-options imagemagick-any->raster))
+ 
+ (converter pdf-file png-file
+   (:require (has-pdftocairo?))
+@@ -302,9 +463,7 @@
+ 
+ (converter pdf-file jpeg-file
+   (:require (has-pdftocairo?))
+-  (:function-with-options pdf-file->pdftocairo-raster)
+-  ;;(:option "texmacs->image:raster-resolution" "300")
+-  )
++  (:function-with-options pdf-file->pdftocairo-raster))
+ 
+ (converter pdf-file png-file
+   (:require (has-gs?))
+@@ -314,6 +473,14 @@
+   (:require (has-gs?))
+   (:function-with-options pdf-file->gs-raster))
+  
+-(converter pdf-file tif-file
+-  (:require (has-gs?))
+-  (:function-with-options pdf-file->gs-raster))
++;(converter pdf-file tif-file
++;  (:require (has-gs?))
++;  (:function-with-options pdf-file->gs-raster))
++
++(converter svg-file png-file
++  (:require (has-rsvg-convert?))
++  (:function-with-options rsvg-convert))
++
++(converter svg-file png-file
++  (:require (has-inkscape?))
++  (:function-with-options inkscape-convert))
+diff --git a/TeXmacs/progs/convert/images/tmimage.scm b/TeXmacs/progs/convert/images/tmimage.scm
+index a8ad310f0..7bf6e13f3 100644
+--- a/TeXmacs/progs/convert/images/tmimage.scm
++++ b/TeXmacs/progs/convert/images/tmimage.scm
+@@ -28,8 +28,8 @@
+   (if (nnot (converter-search "pdf-file" "svg-file")) "svg" "pdf"))
+ 
+ (define-preferences
+-  ("texmacs->image:format" (default-image-export-format) noop))
+-  ;("texmacs->image:scale" "2.0" noop)
++  ("texmacs->image:format" (default-image-export-format) noop)
++  ("texmacs->image:scale" "2.0" noop))
+ 
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; private functions
+@@ -273,8 +273,8 @@
+       (parcm (length-add  "0cm" partmpt))
+       ;; get-page-width return dimension in the cpp "SI" unit which seems to be == "10tmpt"
+ ;; output scale of image?
+-      ;(str-scale  (get-preference "texmacs->image:scale"))
+-      ;(scale (string->number str-scale))
++      (str-scale  (get-preference "texmacs->image:scale"))
++      (scale (string->number str-scale))
+ 
+ ;; We compute the baseline position only if it's a single-line content
+ ;; (this excludes selections begining with 'document)
+@@ -342,7 +342,7 @@
+ 
+ ;; step 2 generate output according to desired output format
+ 
+-    (extents (print-snippet myurl (stree->tree tm-fragment-formated) #t)); scale))
++    (extents (print-snippet myurl (stree->tree tm-fragment-formated) #t scale))
+ ;; compute relative position of baseline from returned box dimensions  see tmhtml.scm
+     (height (- (fourth extents) (second extents)))
+     (relbaseline (if needbaseline (number->string (exact->inexact (/ (- (sixth extents)) height))) "0.0"))
+diff --git a/TeXmacs/progs/kernel/texmacs/tm-convert.scm b/TeXmacs/progs/kernel/texmacs/tm-convert.scm
+index 8849326e8..d671e14ea 100644
+--- a/TeXmacs/progs/kernel/texmacs/tm-convert.scm
++++ b/TeXmacs/progs/kernel/texmacs/tm-convert.scm
+@@ -237,6 +237,7 @@
+         (if fun
+             (let* ((last? (null? (cdr path)))
+                    (opts1 (acons 'last? last? options))
++                   (opts1 (acons 'to-format (car path) opts1))
+                    (opts2 (std-converter-options from (car path)))
+                    (what* (fun what (append opts1 opts2)))
+                    (result (convert-via what* (car path) (cdr path) options)))
+@@ -461,7 +462,7 @@
+          '("ps" "eps" "bmp" "gif" "ico" "tga" "pcx" "wbmp" "wmf" "jpg"
+            "jpeg" "png" "tif" "jbig" "ras" "pnm" "jp2" "jpc" "pgx"
+            "cut" "iff" "lbm" "jng" "koa" "mng" "pbm" "pcd" "pcx"
+-           "pgm" "ppm" "psd" "tga" "tiff" "xbm" "xpm"))
++           "pgm" "ppm" "psd" "svg" "tga" "tiff" "xbm" "xpm"))
+         ((== fm "image") (format-image-suffixes))
+         ((== fm "sound")
+          '("au" "cdr" "cvs" "dat" "gsm" "ogg" "snd" "voc" "wav"))
+diff --git a/TeXmacs/progs/kernel/texmacs/tm-plugins.scm b/TeXmacs/progs/kernel/texmacs/tm-plugins.scm
+index af0f36e19..b6774b759 100644
+--- a/TeXmacs/progs/kernel/texmacs/tm-plugins.scm
++++ b/TeXmacs/progs/kernel/texmacs/tm-plugins.scm
+@@ -530,6 +530,8 @@
+   (with l (ahash-table->list plugin-initialize-todo)
+     (not (list-or (map cdr l)))))
+ 
++(tm-define plugins-with-pref-widget '())
++
+ (define-public (plugin-initialize name*)
+   "Initialize plugin with name @name*"
+   (plugin-load-setup)
+@@ -547,6 +549,8 @@
+               ;;  (display* name " -> " (- (texmacs-time) start) " ms\n"))
+               (load fname)
+               ))
++        (if (defined? (string->symbol (string-append name "-preferences-widget")))
++          (set! plugins-with-pref-widget (rcons plugins-with-pref-widget name) ))
+         (if (plugin-all-initialized?) (plugin-save-setup)))))
+ 
+ (define-public (lazy-plugin-initialize name)
+diff --git a/TeXmacs/progs/prog/glue-symbols.scm b/TeXmacs/progs/prog/glue-symbols.scm
+index cc0a508a8..19ad37821 100644
+--- a/TeXmacs/progs/prog/glue-symbols.scm
++++ b/TeXmacs/progs/prog/glue-symbols.scm
+@@ -186,6 +186,7 @@
+ "font-family-main"
+ "image->psdoc"
+ "anim-control-times"
++"cpp-gspdf2eps"
+ "tree->stree"
+ "stree->tree"
+ "tree->string"
+@@ -1098,7 +1099,7 @@
+ "print-pages-to-file"
+ "print"
+ "print-pages"
+-"print-snippet"
++"cpp-print-snippet"
+ "graphics-file-to-clipboard"
+ "export-postscript"
+ "export-pages-postscript"
+diff --git a/TeXmacs/progs/texmacs/menus/preferences-widgets.scm b/TeXmacs/progs/texmacs/menus/preferences-widgets.scm
+index 070c14ed1..0ef263b6f 100644
+--- a/TeXmacs/progs/texmacs/menus/preferences-widgets.scm
++++ b/TeXmacs/progs/texmacs/menus/preferences-widgets.scm
+@@ -313,24 +313,27 @@
+ 
+ (define (export-formulas-as-mathjax on?)
+   (set-boolean-preference "texmacs->html:mathjax" on?)
+-  (when on?
++  (cond (on?
+     (set-boolean-preference "texmacs->html:mathml" #f)
+-    (set-boolean-preference "texmacs->html:images" #f)
+-    (refresh-now "texmacs to html")))
++    (set-boolean-preference "texmacs->html:images" #f))
++    (else (set-boolean-preference "texmacs->html:images" #t)))
++    (refresh-now "texmacs to html"))
+ 
+ (define (export-formulas-as-mathml on?)
+   (set-boolean-preference "texmacs->html:mathml" on?)
+-  (when on?
++  (cond (on?
+     (set-boolean-preference "texmacs->html:mathjax" #f)
+-    (set-boolean-preference "texmacs->html:images" #f)
+-    (refresh-now "texmacs to html")))
++    (set-boolean-preference "texmacs->html:images" #f))
++    (else (set-boolean-preference "texmacs->html:images" #t)))
++    (refresh-now "texmacs to html"))
+ 
+ (define (export-formulas-as-images on?)
+   (set-boolean-preference "texmacs->html:images" on?)
+-  (when on?
++  (cond (on?
+     (set-boolean-preference "texmacs->html:mathjax" #f)
+-    (set-boolean-preference "texmacs->html:mathml" #f)
+-    (refresh-now "texmacs to html")))
++    (set-boolean-preference "texmacs->html:mathml" #f))
++    (else (set-boolean-preference "texmacs->html:mathjax" #t)))
++    (refresh-now "texmacs to html"))
+ 
+ (tm-widget (html-preferences-widget)
+   ======
+@@ -340,16 +343,7 @@
+     (aligned
+       (meti (hlist // (text "Use CSS for more advanced formatting"))
+         (toggle (set-boolean-preference "texmacs->html:css" answer)
+-                (get-boolean-preference "texmacs->html:css")))
+-      (meti (hlist // (text "Export mathematical formulas as MathJax"))
+-        (toggle (export-formulas-as-mathjax answer)
+-                (get-boolean-preference "texmacs->html:mathjax")))
+-      (meti (hlist // (text "Export mathematical formulas as MathML"))
+-        (toggle (export-formulas-as-mathml answer)
+-                (get-boolean-preference "texmacs->html:mathml")))
+-      (meti (hlist // (text "Export mathematical formulas as images"))
+-        (toggle (export-formulas-as-images answer)
+-                (get-boolean-preference "texmacs->html:images"))))
++                (get-boolean-preference "texmacs->html:css"))))
+     ===
+     (hlist
+       (text "CSS stylesheet:") //
+@@ -360,7 +354,24 @@
+               "https://www.texmacs.org/css/web-article-colored.css"
+               "https://www.texmacs.org/css/web-article-dark-colored.css"
+               "")
+-            (get-preference "texmacs->html:css-stylesheet") "18em")))
++            (get-preference "texmacs->html:css-stylesheet") "18em"))
++    ======              
++    (aligned
++      (meti (hlist // (text "Export mathematical formulas as MathJax"))
++        (toggle (export-formulas-as-mathjax answer)
++                (get-boolean-preference "texmacs->html:mathjax")))
++      (meti (hlist // (text "Export mathematical formulas as MathML"))
++        (toggle (export-formulas-as-mathml answer)
++                (get-boolean-preference "texmacs->html:mathml")))
++      (meti (hlist // (text "Export mathematical formulas as images"))
++        (toggle (export-formulas-as-images answer)
++                (get-boolean-preference "texmacs->html:images"))))
++    (if (file-converter-exists? "x.pdf" "y.svg")
++     (aligned
++      (meti (hlist // (text "Export SVG images when possible"))
++        (toggle (set-boolean-preference "texmacs->html:svg" answer)
++                (get-boolean-preference "texmacs->html:svg"))))))
++                                
+   ====== ======
+   (bold (text "Html -> TeXmacs"))
+   ===
+@@ -598,35 +609,28 @@
+    (eval `(define-preference-names "texmacs->image:format" ,@valid-image-format-list))
+    (cadr (apply map list valid-image-format-list))))
+ 
+-(define (supports-inkscape?) (url-exists-in-path? "inkscape"))
+ 
+ (tm-widget (image-preferences-widget)
+   ======
+   (bold (text "TeXmacs -> Image"))
+   ===
+-  (aligned
+-    (item (text "Bitmap export resolution (dpi):")
+-      (enum (set-preference "texmacs->image:raster-resolution" answer)
+-            '("1200" "600" "300" "150" "")
+-            (get-preference "texmacs->image:raster-resolution")
++    (aligned
++        (item (text "Clipboard image format:  ")
++          (enum (set-pretty-preference "texmacs->image:format" answer)
++              (pretty-format-list)
++              (get-pretty-preference "texmacs->image:format")
++           "8em"))
++        (item (text "Selection export scale:  ")
++          (enum (set-pretty-preference "texmacs->image:scale" answer)
++            '("1" "1.5" "2" "")
++            (get-pretty-preference "texmacs->image:scale")
+             "8em"))
+-    (item (text "Clipboard image format:")
+-      (enum (set-pretty-preference "texmacs->image:format" answer)
+-            (pretty-format-list)
+-            (get-pretty-preference "texmacs->image:format")
+-            "8em")))
+-  ====== ======
+-  (bold (text "Image -> TeXmacs"))
+-  ===
+-  (aligned
+-    (meti
+-      (when (supports-inkscape?)
+-        (hlist // (text "Use Inkscape for conversion from SVG")))
+-      (when (supports-inkscape?)
+-        (toggle (set-boolean-preference
+-                 "image->texmacs:svg-prefer-inkscape" answer)
+-                (get-boolean-preference
+-                 "image->texmacs:svg-prefer-inkscape"))))))
++        (item (text "Bitmap export resolution (dpi):  ")
++          (enum (set-preference "texmacs->image:raster-resolution" answer)
++              '("1200" "600" "300" "150" "")
++              (get-preference "texmacs->image:raster-resolution")
++              "8em")))
++)
+ 
+ ;; All converters ----------
+ 
+@@ -878,6 +882,21 @@
+     ======
+     (dynamic (experimental-preferences-widget))))
+ 
++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
++;; Tabs for plugins that define a preference widget
++;; (such widget must be called pluginname-preferences-widget and defined
++;; in pluginname.scm or init-pluginname.scm inside the pluginname/prog subdir)
++;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
++
++(tm-widget (plugins-preferences-widget)
++  (assuming (list>0? plugins-with-pref-widget)
++  ===
++  (padded
++    (tabs (loop (plug plugins-with-pref-widget)
++              (tab (text (upcase-first plug))
++                    (centered (dynamic (eval `(,(string->symbol (string-append plug "-preferences-widget"))))))))))
++  ===))
++
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Preferences widget
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+@@ -891,18 +910,19 @@
+       (icon-tab "tm_prefs_keyboard.xpm" (text "Keyboard")
+         (centered
+           (dynamic (keyboard-preferences-widget))))
+-      ;; TODO: please implement nice icon tabs first before
+-      ;; adding new tabs in the preferences widget
+-      ;; The tabs currently take too much horizontal space
+-      ;;(icon-tab "tm_prefs_other.xpm" (text "Mathematics") ; TODO: icon
+-      ;;  (centered
+-      ;;    (dynamic (math-preferences-widget))))
++      (icon-tab "tm_math_preferences.xpm" (text "Mathematics")
++        (centered
++          (dynamic (math-preferences-widget))))
+       (icon-tab "tm_prefs_convert.xpm" (text "Convert")
+         (dynamic (conversion-preferences-widget)))
+       (assuming (== (get-preference "experimental encryption") "on")
+         (icon-tab "tm_prefs_security.xpm" (text "Security")
+           (centered
+             (dynamic (security-preferences-widget)))))
++     (assuming (list>0? plugins-with-pref-widget)
++       (icon-tab "tm_plugins_prefs.xpm" (text "Plugins")
++         (centered
++           (dynamic (plugins-preferences-widget)))))
+       (icon-tab "tm_prefs_other.xpm" (text "Other")
+         (centered
+           (dynamic (other-preferences-widget)))))))
+diff --git a/TeXmacs/progs/utils/library/cpp-wrap.scm b/TeXmacs/progs/utils/library/cpp-wrap.scm
+index 1d90f1f62..649d3d23d 100644
+--- a/TeXmacs/progs/utils/library/cpp-wrap.scm
++++ b/TeXmacs/progs/utils/library/cpp-wrap.scm
+@@ -102,6 +102,8 @@
+ (tm-define (clipboard-copy cb) (cpp-clipboard-copy cb))
+ (tm-define (clipboard-cut cb) (cpp-clipboard-cut cb))
+ (tm-define (clipboard-paste cb) (cpp-clipboard-paste cb))
++(tm-define (print-snippet url t preamble? . scaling)
++  (cpp-print-snippet url t preamble? (if (null? scaling) 1 (car scaling)))) 
+ 
+ (tm-define (nr-pages) (cpp-nr-pages))
+ 
+diff --git a/src/Edit/Editor/edit_main.cpp b/src/Edit/Editor/edit_main.cpp
+index f2ed1c88d..3bd9ac218 100644
+--- a/src/Edit/Editor/edit_main.cpp
++++ b/src/Edit/Editor/edit_main.cpp
+@@ -371,7 +371,7 @@ edit_main_rep::export_ps (url name, string first, string last) {
+ }
+ 
+ array<int>
+-edit_main_rep::print_snippet (url name, tree t, bool conserve_preamble) {
++edit_main_rep::print_snippet (url name, tree t, bool conserve_preamble, double zoom) {
+   tree buft= subtree (et, rp);
+   if (conserve_preamble)
+     if (is_document (buft) && is_compound (buft[0], "hide-preamble"))
+@@ -402,11 +402,15 @@ edit_main_rep::print_snippet (url name, tree t, bool conserve_preamble) {
+   env->update ();
+   
+   if (b->x4 - b->x3 >= 5*PIXEL && b->y4 - b->y3 >= 5*PIXEL) {
+-    if (bitmap) make_raster_image (name, b, 5.0);
+-    else if (ps) make_eps (name, b, dpi);
++    if (bitmap) {
++      int out_dpi = as_int(get_preference ("texmacs->image:raster-resolution"));
++      double zoomf= (double) zoom*5.0*out_dpi/dpi ; //5 hard coded in make_raster_image
++      make_raster_image (name, b, zoomf);
++    }
++    else if (ps) make_eps (name, b, dpi/zoom);
+     else {
+       url temp= url_temp (use_pdf ()? ".pdf": ".eps");
+-      make_eps (temp, b, dpi);
++      make_eps (temp, b, dpi/zoom);
+       ::remove (name);
+       if (!call_scm_converter (temp, name)) {
+         call_imagemagick_convert (temp, name);
+diff --git a/src/Edit/Editor/edit_main.hpp b/src/Edit/Editor/edit_main.hpp
+index 266ff1b53..0490c7091 100644
+--- a/src/Edit/Editor/edit_main.hpp
++++ b/src/Edit/Editor/edit_main.hpp
+@@ -70,7 +70,7 @@ public:
+   void print_to_file (url ps_name, string first="1", string last="1000000");
+   void print_buffer (string first="1", string last="1000000");
+   void export_ps (url ps_name, string first="1", string last="1000000");
+-  array<int> print_snippet (url u, tree t, bool conserve_preamble);
++  array<int> print_snippet (url u, tree t, bool conserve_preamble, double zoom=1);
+   bool graphics_file_to_clipboard (url output);
+   void footer_eval (string s);
+   tree the_line ();
+diff --git a/src/Edit/editor.hpp b/src/Edit/editor.hpp
+index 57d2cbb57..5717790ee 100644
+--- a/src/Edit/editor.hpp
++++ b/src/Edit/editor.hpp
+@@ -597,7 +597,7 @@ public:
+   virtual void print_buffer (string first="1", string last="1000000") = 0;
+   virtual void export_ps (url ps_name,
+ 			  string first="1", string last="1000000") = 0;
+-  virtual array<int> print_snippet (url u, tree t, bool conserve_preamble) = 0;
++  virtual array<int> print_snippet (url u, tree t, bool conserve_preamble, double zoom) = 0;
+   virtual bool graphics_file_to_clipboard (url output) = 0;
+   virtual void footer_eval (string s) = 0;
+   virtual tree the_line () = 0;
+diff --git a/src/Plugins/Ghostscript/gs_utilities.cpp b/src/Plugins/Ghostscript/gs_utilities.cpp
+index c07b1f1e9..9770e1b16 100644
+--- a/src/Plugins/Ghostscript/gs_utilities.cpp
++++ b/src/Plugins/Ghostscript/gs_utilities.cpp
+@@ -83,16 +83,8 @@ string
+ eps_device () {
+   static string dev; // no need to resolve each time
+   if (dev == "") {
+-    string cmd= gs_prefix ()*" --version";
+-    string buf= var_eval_system (cmd);
+-    double ver;
+-    int pos=0;
+-    if (read_double (buf, pos, ver)) {
+-      if (DEBUG_CONVERT) debug_convert << "gs version :"<<buf<<LF;
+-      if (ver >= 9.14) dev="eps2write";
++      if (gs_version () >= 9.14) dev="eps2write";
+       else dev="epswrite";
+-    }
+-    else  convert_error << "Cannot determine gs version"<<LF;
+   }
+   return copy(dev);
+ }
+@@ -323,29 +315,27 @@ gs_to_png (url image, url png, int w, int h) { //Achtung! w,h in pixels
+   int bbw, bbh;
+   int rw, rh;
+   int bx1, by1, bx2, by2;
+-  if (suffix (image) == "pdf") 
++  if (suffix (image) == "pdf") {
+     image_size (image, bbw, bbh);
+     //don't call gs_PDFimage_size 
+     //in order to benefit from caching
++    cmd << "-dUseCropBox -dPDFFitPage "; // old gs versions (<9.0 ?) fail if CropBox not explicitly defined
++    cmd << sys_concretize (image);
++  }
+   else {
+     ps_bounding_box (image, bx1, by1, bx2, by2); //same comment
+     bbw=bx2-bx1;
+     bbh=by2-by1;
+-  }
+-  rw=(w*72)/bbw;
+-  rh=(h*72)/bbh;
+-  cmd << "-r" << as_string (rw) << "x" << as_string (rh) << " ";  
++/*    rw=(w*72)/bbw;
++    rh=(h*72)/bbh;
++    cmd << "-r" << as_string (rw) << "x" << as_string (rh) << " ";
+   
+-  if (DEBUG_CONVERT) debug_convert << "w="<<w<<" h="<<h<<LF
++    if (DEBUG_CONVERT) debug_convert << "w="<<w<<" h="<<h<<LF
+       << "bbw="<<bbw<<" bbh="<<bbh<<LF
+       <<" res ="<<rw<<" * "<<rh <<LF;
+-  
+-  if (suffix(image) == "pdf") {
+-    cmd << "-dUseCropBox "; // old gs versions (<9.0 ?) fail if CropBox not explicitly defined
+-    cmd << sys_concretize (image);
+-  }
+-  else {
+-    //don't use -dEPSCrop which works incorrectly if (bx1 != 0 || by1 != 0)
++*/
++   cmd << "-dEPSFitPage ";
++   //don't use -dEPSCrop which works incorrectly if (bx1 != 0 || by1 != 0)
+     cmd << "-c \" "<< as_string (-bx1) << " "<< as_string (-by1) <<" translate gsave \"  -f "
+             << sys_concretize (image) << " -c \" grestore \"";    
+   }
+@@ -368,6 +358,7 @@ gs_to_eps (url image, url eps) { //this should be used mostly for pdf->eps conve
+   cmd << "-dQUIET -dNOPAUSE -dBATCH -dSAFER ";
+   cmd << "-sDEVICE=" << eps_device ();
+   cmd << " -sOutputFile=" << sys_concretize (eps) << " ";
++  if (suffix (eps) == "eps") cmd << "-sPageList=1 ";
+   if (suffix (image) == "pdf") {
+     image_size (image, bx2, by2);
+     bx1=by1=0;
+diff --git a/src/Plugins/Qt/QTMMenuHelper.cpp b/src/Plugins/Qt/QTMMenuHelper.cpp
+index 1fba9b2d2..8c75958f2 100644
+--- a/src/Plugins/Qt/QTMMenuHelper.cpp
++++ b/src/Plugins/Qt/QTMMenuHelper.cpp
+@@ -26,6 +26,9 @@
+ #include <QCompleter>
+ #include <QKeyEvent>
+ #include <QApplication>
++#include <QStylePainter>
++#include <QIcon>
++#include <QStyleOptionTab>
+ 
+ /******************************************************************************
+  * QTMCommand
+@@ -761,6 +764,8 @@ QTMLineEdit::focusOutEvent (QFocusEvent* ev)
+ 
+ QTMTabWidget::QTMTabWidget (QWidget *p) : QTabWidget(p) {
+   QObject::connect (this, SIGNAL (currentChanged (int)), this, SLOT (resizeOthers (int)));
++  QTMTabBar* tabbar = new QTMTabBar(this);
++  setTabBar(tabbar);
+ }
+ 
+ /*! Resizes the widget to the size of the tab given by the index.
+@@ -794,6 +799,49 @@ BEGIN_SLOT
+ END_SLOT
+ }
+ 
++/******************************************************************************
++ * QTMTabBar
++ ******************************************************************************/
++// Overloads QTabBar so that tabs with icons appear with icon and text vertically stacked 
++QTMTabBar::QTMTabBar (QWidget *p) : QTabBar(p) {}
++
++QSize QTMTabBar::tabSizeHint(int index) const {
++  QIcon icon = tabIcon (index);
++  if (icon.isNull() ) return QTabBar::tabSizeHint(index);
++  else {
++    // Hack. Source Qt code cannot be easily adapted 
++    // because it uses private classes & functions 
++    QSize osize = QTabBar::tabSizeHint(index);
++    QSize isize = iconSize();
++    return QSize(qMax(osize.width() - isize.width() -20, 3*isize.width()/2 + 8), osize.height() + 3*isize.height()/2);
++  }
++}
++
++void
++QTMTabBar::paintEvent(QPaintEvent* event) {
++  if (count()>0) {//needed?
++    QIcon icon = tabIcon (0);
++    if (icon.isNull())
++      //if no icons draw as usual
++      QTabBar::paintEvent(event);
++    else {
++      QStylePainter painter(this);
++      for(int i = 0; i < count(); ++i) {
++        QStyleOptionTab tab;
++        initStyleOption(&tab, i);
++        QRect tabrect = tabRect(i); //uses tabSizeHint under the hood
++        tabrect.adjust(0, 6, 0, -3);//small vertical padding
++        icon = tab.icon;
++        QPixmap pixmap = icon.pixmap(3*iconSize()/2); //looks better with icon larger than when all inline
++        painter.drawControl(QStyle::CE_TabBarTabShape, tab);
++        painter.drawItemPixmap(tabrect, Qt::AlignTop|Qt::AlignHCenter, pixmap);
++        painter.drawItemText(tabrect, Qt::AlignBottom|Qt::AlignHCenter, palette(), 1, tab.text);
++      }
++    }
++  }
++}
++
++
+ /******************************************************************************
+  * QTMRefreshWidget
+  ******************************************************************************/
+diff --git a/src/Plugins/Qt/QTMMenuHelper.hpp b/src/Plugins/Qt/QTMMenuHelper.hpp
+index 6d505ac8c..b01c1dbfb 100644
+--- a/src/Plugins/Qt/QTMMenuHelper.hpp
++++ b/src/Plugins/Qt/QTMMenuHelper.hpp
+@@ -33,6 +33,7 @@
+ #include <QScrollArea>
+ #include <QTabWidget>
+ #include <QToolButton>
++#include <QTabBar>
+ 
+ /*! Handles TeXmacs commands in the QT way.
+ 
+@@ -318,6 +319,17 @@ public slots:
+   void resizeOthers(int index);
+ };
+ 
++/*! A QTabBar where tabs' icon and text are stacked. */
++class QTMTabBar : public QTabBar {
++  Q_OBJECT
++  
++public:
++  QTMTabBar (QWidget* p = NULL);
++  QSize tabSizeHint(int index) const;
++
++protected:
++  void paintEvent(QPaintEvent* event);
++};
+ 
+ /*! A container widget which redraws the widgets it owns. */
+ class QTMRefreshWidget : public QWidget {
+diff --git a/src/Plugins/Qt/QTMWidget.cpp b/src/Plugins/Qt/QTMWidget.cpp
+index bb7356565..c8d92846d 100644
+--- a/src/Plugins/Qt/QTMWidget.cpp
++++ b/src/Plugins/Qt/QTMWidget.cpp
+@@ -537,13 +537,12 @@ QTMWidget::inputMethodEvent (QInputMethodEvent* event) {
+     if (!done) {
+       if (DEBUG_QT)
+         debug_qt << "IM committing: " << commit_string.toUtf8().data() << LF;
+-      if (preediting || get_preference ("speech", "off") == "off")
+-        for (int i = 0; i < commit_string.size(); ++i)
+-          kbdEvent (0, Qt::NoModifier, commit_string[i]);
+-      else {
+-        string s= "speech:" * from_qstring (commit_string);
+-        kbdEvent (0, Qt::NoModifier, to_qstring (s));
+-      }
++#if 1
++      for (int i = 0; i < commit_string.size(); ++i)
++        kbdEvent (0, Qt::NoModifier, commit_string[i]);
++#else
++      kbdEvent (0, Qt::NoModifier, commit_string);
++#endif
+     }
+   }
+   
+diff --git a/src/Plugins/Qt/qt_picture.cpp b/src/Plugins/Qt/qt_picture.cpp
+index 8e7d8443e..ed357a27a 100644
+--- a/src/Plugins/Qt/qt_picture.cpp
++++ b/src/Plugins/Qt/qt_picture.cpp
+@@ -235,13 +235,30 @@ may_transform (url file_name, const QImage& pm) {
+ QImage*
+ get_image_for_real (url u, int w, int h, tree eff, SI pixel) {
+   QImage *pm = NULL;
+-
++  if (DEBUG_CONVERT) debug_convert << "qt loading image " << concretize (u) <<LF;
+   if (suffix (u) == "svg") {
+-    QSvgRenderer renderer (utf8_to_qstring (concretize (u)));
+-    pm= new QImage (w, h, QImage::Format_ARGB32);
+-    pm->fill (Qt::transparent);
+-    QPainter painter (pm);
+-    renderer.render (&painter);
++    //if we have a good scm-defined converter for SVG (Inkscape or rsvg-convert)
++    //always use it as it can handle properly svg full spec, whereas QSvg handles only SVG tiny
++    url temp= url_temp (".png");
++    if (call_scm_converter(u, temp, w, h)) {
++      pm= new QImage (utf8_to_qstring (as_string (temp)));
++      remove (temp);
++    }
++    else {
++      if (! svg_is_tiny(u)) {
++        convert_warning << "The image '" << concretize (u) << "' is not declared as Tiny SVG;"<< LF
++         << "Texmacs' Qt-based svg image backend may render it incorrectly."<< LF
++         << "In that case, consider converting the image to pdf."<< LF
++         << "As an alternative, you may install Inkscape or rsvg-convert;"<< LF
++         << "TeXmacs will then use it automatically in place of Qt for handling svg."<< LF;
++      }
++      if (DEBUG_CONVERT) debug_convert << "using native qt" <<LF;
++      QSvgRenderer renderer (utf8_to_qstring (concretize (u)));
++      pm= new QImage (w, h, QImage::Format_ARGB32);
++      pm->fill (Qt::transparent);
++      QPainter painter (pm);
++      renderer.render (&painter);
++    }
+   } else if (qt_supports (u)) {
+     pm= new QImage (utf8_to_qstring (concretize (u)));
+   } else {
+diff --git a/src/Plugins/Qt/qt_utilities.cpp b/src/Plugins/Qt/qt_utilities.cpp
+index 479d541ab..e006a79c9 100644
+--- a/src/Plugins/Qt/qt_utilities.cpp
++++ b/src/Plugins/Qt/qt_utilities.cpp
+@@ -28,6 +28,7 @@
+ #include <QPrintDialog>
+ #include <QImageReader>
+ #include <QApplication>
++#include <QSvgRenderer>
+ 
+ #include "colors.hpp"
+ 
+@@ -479,61 +480,79 @@ qt_convert_image (url image, url dest, int w, int h) {// w, h in pixels
+ 
+ void
+ qt_image_to_pdf (url image, url outfile, int w_pt, int h_pt, int dpi) {
+-// use a QPrinter to output raster images to eps or pdf
++// use a QPrinter to output images to eps or pdf
+ // dpi is the maximum dpi : the image will either be dowsampled to that dpi
+ // or the actual dpi will be lower  
+   if (DEBUG_CONVERT) debug_convert << "qt_image_to_eps_or_pdf " << image << " -> "<<outfile<<LF;
+-  QPrinter printer;
++  QPrinter printer(QPrinter::HighResolution);
+   printer.setOrientation(QPrinter::Portrait);
+-  if (suffix(outfile)=="eps") {
+-#if (QT_VERSION >= 0x050000)
+-    //note that PostScriptFormat is gone in Qt5. a substitute?: http://soft.proindependent.com/eps/
+-    cout << "TeXmacs] warning: PostScript format no longer supported in Qt5\n";
+-    printer.setOutputFormat(QPrinter::PdfFormat);
+-#else    
++#if (QT_VERSION < 0x050000)
++//PostScriptFormat is gone in Qt5.
++  if (suffix(outfile)=="eps")
+     printer.setOutputFormat(QPrinter::PostScriptFormat);
++  else
+ #endif
+-  }
+-  else printer.setOutputFormat(QPrinter::PdfFormat);
++    printer.setOutputFormat(QPrinter::PdfFormat);
+   printer.setFullPage(true);
+   if (!dpi) dpi=96; 
+   printer.setResolution(dpi);
+   printer.setOutputFileName(utf8_to_qstring (concretize (outfile)));
+-  QImage im (utf8_to_qstring (concretize (image)));
+-  if (im.isNull ()) {
+-    convert_error << "Cannot read image file '" << image << "'"
+-    << " in qt_image_to_pdf" << LF;
+-  // load the "?" image?
++  printer.setPaperSize(QSizeF(w_pt, h_pt), QPrinter::Point); // in points
++  if (suffix (image) == "svg") {
++    QSvgRenderer renderer (utf8_to_qstring (concretize (image)));
++    if (renderer.isValid()) {
++      if (DEBUG_CONVERT) debug_convert << "qt printing svg to pdf " << image <<LF;
++      QPainter p;
++      p.begin(&printer);
++      renderer.render (&p);
++      p.end();
++      }
++    else {
++      convert_error << "Cannot load svg image file '" << image << "'"
++      << " in qt_image_to_pdf" << LF;
++      }
++
+   }
+   else {
++    QImage im (utf8_to_qstring (concretize (image)));
++
++    if (im.isNull ()) {
++      convert_error << "Cannot read image file '" << image << "'"
++      << " in qt_image_to_pdf" << LF;
++      // load the "?" image?
++    }
++    else {
+ /*  if (DEBUG_CONVERT) debug_convert << "size asked " << w_pt << "x"<<h_pt
+   << " at " << maximum dpi <<" dpi"<<LF
+   << "dpi set: " << printer.resolution() <<LF;
+ */
+-    if (dpi > 0 && w_pt > 0 && h_pt > 0) {
+-	    printer.setPaperSize(QSizeF(w_pt, h_pt), QPrinter::Point); // in points
+-
+-      // w_pt and h_pt are dimensions in points (and there are 72 points per inch)
+-      int ww = w_pt * dpi / 72;
+-      int hh = h_pt * dpi / 72;
+-      if ((ww < im.width ()) ||( hh < im.height ())) //downsample if possible to reduce file size
++      if (dpi > 0 && w_pt > 0 && h_pt > 0) {
++        // w_pt and h_pt are dimensions in points (and there are 72 points per inch)
++        int ww = w_pt * dpi / 72; //pixel number needed @ dpi
++        int hh = h_pt * dpi / 72;
++        if ((ww < im.width ()) ||( hh < im.height ())) //downsample if possible to reduce file size
+ 	      im= im.scaled (ww, hh, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+-  	  else // image was too small, reduce dpi accordingly to fill page
+-        printer.setResolution((int) (dpi*im.width())/(double)ww);
+-      if (DEBUG_CONVERT) debug_convert << "dpi asked: "<< dpi <<" ; actual dpi set: " << printer.resolution() <<LF;
++          else // image was too small, reduce dpi accordingly to fill page
++          printer.setResolution((int) (dpi*im.width())/(double)ww);
++        if (DEBUG_CONVERT) debug_convert << "dpi asked: "<< dpi <<" ; actual dpi set: " << printer.resolution() <<LF;
+ 	  }
+ 	  else printer.setPaperSize(QSizeF(im.width (), im.height ()), QPrinter::DevicePixel);
+-    QPainter p;
+-    p.begin(&printer);
+-    p.drawImage(0, 0, im);
+-    p.end();
++      QPainter p;
++      p.begin(&printer);
++      p.drawImage(0, 0, im);
++      p.end();
+     }
++  }
+ }
+ 
++#if (QT_VERSION < 0x050000)
+ void qt_image_to_eps(url image, url outfile, int w_pt, int h_pt, int dpi) {
+   qt_image_to_pdf(image, outfile, w_pt, h_pt, dpi);};
+ 
+-/* not in use anymore : now use a Qt printer that outputs ps.
++#endif
++/* for QT5+ we could revert to this code used before r10013 (2016)
++// otherwise imagemagick is used.
++// And maybe we should deprecate printing to PS altogether.
+ 
+ void
+ qt_image_to_eps (url image, url eps, int w_pt, int h_pt, int dpi) {
+diff --git a/src/Plugins/Qt/qt_utilities.hpp b/src/Plugins/Qt/qt_utilities.hpp
+index 755183961..02a4940d7 100644
+--- a/src/Plugins/Qt/qt_utilities.hpp
++++ b/src/Plugins/Qt/qt_utilities.hpp
+@@ -96,8 +96,9 @@ bool qt_native_image_size (url image, int& w, int& h);
+ void qt_pretty_image_size (int ww, int hh, string& w, string& h);
+ bool qt_pretty_image_size (url image, string& w, string& h);
+ void qt_convert_image (url image, url dest, int w =0, int h =0);
++#if (QT_VERSION < 0x050000)
+ void qt_image_to_eps (url image, url eps, int w_pt =0, int h_pt =0, int dpi= 0);
+-string qt_image_to_eps (url image, int w_pt =0, int h_pt =0, int dpi= 0);
++#endif
+ void qt_image_to_pdf (url image, url pdf, int w_pt =0, int h_pt =0, int dpi =0);
+ 
+ string qt_application_directory ();
+diff --git a/src/Scheme/Glue/build-glue-basic.scm b/src/Scheme/Glue/build-glue-basic.scm
+index b35410fba..8e9d1bb65 100644
+--- a/src/Scheme/Glue/build-glue-basic.scm
++++ b/src/Scheme/Glue/build-glue-basic.scm
+@@ -186,6 +186,7 @@
+   ;; routines for images and animations
+   (image->psdoc image_to_psdoc (string url))
+   (anim-control-times get_control_times (array_double content))
++  (cpp-gspdf2eps gs_to_eps (void url url))
+ 
+   ;; routines for trees
+   (tree->stree tree_to_scheme_tree (scheme_tree tree))
+diff --git a/src/Scheme/Glue/build-glue-editor.scm b/src/Scheme/Glue/build-glue-editor.scm
+index 5ded7e5e3..a53234988 100644
+--- a/src/Scheme/Glue/build-glue-editor.scm
++++ b/src/Scheme/Glue/build-glue-editor.scm
+@@ -335,7 +335,7 @@
+   (print-pages-to-file print_to_file (void url string string))
+   (print print_buffer (void))
+   (print-pages print_buffer (void string string))
+-  (print-snippet print_snippet (array_int url content bool))
++  (cpp-print-snippet print_snippet (array_int url content bool double))
+   (graphics-file-to-clipboard graphics_file_to_clipboard (bool url))
+   (export-postscript export_ps (void url))
+   (export-pages-postscript export_ps (void url string string))
+diff --git a/src/Scheme/Glue/glue_basic.cpp b/src/Scheme/Glue/glue_basic.cpp
+index ce6b89d23..35a198de7 100644
+--- a/src/Scheme/Glue/glue_basic.cpp
++++ b/src/Scheme/Glue/glue_basic.cpp
+@@ -1936,6 +1936,21 @@ tmg_anim_control_times (tmscm arg1) {
+   return array_double_to_tmscm (out);
+ }
+ 
++tmscm
++tmg_cpp_gspdf2eps (tmscm arg1, tmscm arg2) {
++  TMSCM_ASSERT_URL (arg1, TMSCM_ARG1, "cpp-gspdf2eps");
++  TMSCM_ASSERT_URL (arg2, TMSCM_ARG2, "cpp-gspdf2eps");
++
++  url in1= tmscm_to_url (arg1);
++  url in2= tmscm_to_url (arg2);
++
++  // TMSCM_DEFER_INTS;
++  gs_to_eps (in1, in2);
++  // TMSCM_ALLOW_INTS;
++
++  return TMSCM_UNSPECIFIED;
++}
++
+ tmscm
+ tmg_tree_2stree (tmscm arg1) {
+   TMSCM_ASSERT_TREE (arg1, TMSCM_ARG1, "tree->stree");
+@@ -10321,6 +10336,7 @@ initialize_glue_basic () {
+   tmscm_install_procedure ("font-family-main",  tmg_font_family_main, 1, 0, 0);
+   tmscm_install_procedure ("image->psdoc",  tmg_image_2psdoc, 1, 0, 0);
+   tmscm_install_procedure ("anim-control-times",  tmg_anim_control_times, 1, 0, 0);
++  tmscm_install_procedure ("cpp-gspdf2eps",  tmg_cpp_gspdf2eps, 2, 0, 0);
+   tmscm_install_procedure ("tree->stree",  tmg_tree_2stree, 1, 0, 0);
+   tmscm_install_procedure ("stree->tree",  tmg_stree_2tree, 1, 0, 0);
+   tmscm_install_procedure ("tree->string",  tmg_tree_2string, 1, 0, 0);
+diff --git a/src/Scheme/Glue/glue_editor.cpp b/src/Scheme/Glue/glue_editor.cpp
+index a49fd4d2b..c6a3044bc 100644
+--- a/src/Scheme/Glue/glue_editor.cpp
++++ b/src/Scheme/Glue/glue_editor.cpp
+@@ -3314,17 +3314,19 @@ tmg_print_pages (tmscm arg1, tmscm arg2) {
+ }
+ 
+ tmscm
+-tmg_print_snippet (tmscm arg1, tmscm arg2, tmscm arg3) {
+-  TMSCM_ASSERT_URL (arg1, TMSCM_ARG1, "print-snippet");
+-  TMSCM_ASSERT_CONTENT (arg2, TMSCM_ARG2, "print-snippet");
+-  TMSCM_ASSERT_BOOL (arg3, TMSCM_ARG3, "print-snippet");
++tmg_cpp_print_snippet (tmscm arg1, tmscm arg2, tmscm arg3, tmscm arg4) {
++  TMSCM_ASSERT_URL (arg1, TMSCM_ARG1, "cpp-print-snippet");
++  TMSCM_ASSERT_CONTENT (arg2, TMSCM_ARG2, "cpp-print-snippet");
++  TMSCM_ASSERT_BOOL (arg3, TMSCM_ARG3, "cpp-print-snippet");
++  TMSCM_ASSERT_DOUBLE (arg4, TMSCM_ARG4, "cpp-print-snippet");
+ 
+   url in1= tmscm_to_url (arg1);
+   content in2= tmscm_to_content (arg2);
+   bool in3= tmscm_to_bool (arg3);
++  double in4= tmscm_to_double (arg4);
+ 
+   // TMSCM_DEFER_INTS;
+-  array_int out= get_current_editor()->print_snippet (in1, in2, in3);
++  array_int out= get_current_editor()->print_snippet (in1, in2, in3, in4);
+   // TMSCM_ALLOW_INTS;
+ 
+   return array_int_to_tmscm (out);
+@@ -3902,7 +3904,7 @@ initialize_glue_editor () {
+   tmscm_install_procedure ("print-pages-to-file",  tmg_print_pages_to_file, 3, 0, 0);
+   tmscm_install_procedure ("print",  tmg_print, 0, 0, 0);
+   tmscm_install_procedure ("print-pages",  tmg_print_pages, 2, 0, 0);
+-  tmscm_install_procedure ("print-snippet",  tmg_print_snippet, 3, 0, 0);
++  tmscm_install_procedure ("cpp-print-snippet",  tmg_cpp_print_snippet, 4, 0, 0);
+   tmscm_install_procedure ("graphics-file-to-clipboard",  tmg_graphics_file_to_clipboard, 1, 0, 0);
+   tmscm_install_procedure ("export-postscript",  tmg_export_postscript, 1, 0, 0);
+   tmscm_install_procedure ("export-pages-postscript",  tmg_export_pages_postscript, 3, 0, 0);
+diff --git a/src/Scheme/Scheme/glue.cpp b/src/Scheme/Scheme/glue.cpp
+index 6df9ab2ed..19a70734a 100644
+--- a/src/Scheme/Scheme/glue.cpp
++++ b/src/Scheme/Scheme/glue.cpp
+@@ -29,6 +29,7 @@
+ #include "Database/database.hpp"
+ #include "Sqlite3/sqlite3.hpp"
+ #include "Updater/tm_updater.hpp"
++#include "Ghostscript/gs_utilities.hpp"
+ 
+ tmscm 
+ blackboxP (tmscm t) {
+diff --git a/src/System/Files/image_files.cpp b/src/System/Files/image_files.cpp
+index 6798e52cf..f977363b4 100644
+--- a/src/System/Files/image_files.cpp
++++ b/src/System/Files/image_files.cpp
+@@ -379,17 +379,55 @@ pdf_image_size (url image, int& w, int& h) {
+ void
+ svg_image_size (url image, int& w, int& h) {
+   string content;
+-  bool err= load_string (image, content, false);
+-  if (!err) {
++  bool ok = ! load_string (image, content, false);
++  if (ok) {
+     tree t= parse_xml (content);
+     tree result= find_first_element_by_name (t, "svg");
+     string width= get_attr_from_element (result, "width", "");
+     string height= get_attr_from_element (result, "height", "");
+     int try_width= parse_xml_length (width);
+     int try_height= parse_xml_length (height);
+-    if (try_width > 0) w= try_width;
+-    if (try_height > 0) h= try_height;
++    if ((try_width > 0) && (try_height > 0)) {
++       w= try_width;
++       h= try_height;
++    }
++    else {
++      string viewBox= get_attr_from_element (result, "viewBox", "");
++      int pos = 0;
++      double X1, Y1, W, H;
++      skip_spaces (viewBox, pos);
++      ok= read_double (viewBox, pos, X1);
++      skip_spaces (viewBox, pos);
++      ok= ok && read_double (viewBox, pos, Y1);
++      skip_spaces (viewBox, pos);
++      ok= ok && read_double (viewBox, pos, W);
++      skip_spaces (viewBox, pos);
++      ok= ok && read_double (viewBox, pos, H);
++      if (ok) {
++        w = tm_round(W);
++        h = tm_round(H);
++      }
++    }
++    if (DEBUG_CONVERT)
++      if (ok) debug_convert<< "svg_image_size : " << w << " x " << h << " for " << image <<"\n";
++      else debug_convert<< "svg_image_size could not determine size of " << image << "\n";
++  }
++}
++
++bool
++svg_is_tiny (url image) {
++  string content;
++  bool err= load_string (image, content, false);
++  if (!err) {
++    tree t= parse_xml (content);
++    tree result= find_first_element_by_name (t, "svg");
++    string version= get_attr_from_element (result, "version", "");
++    string baseProfile= get_attr_from_element (result, "baseProfile", "");
++    if (DEBUG_CONVERT) debug_convert << "svg version '" << version<<"' ; baseprofile:'"<< baseProfile<<"'"<< LF;
++    bool tiny =  ((N(version) > 0) && (version[0] == '1') && (baseProfile == "tiny"));
++    return tiny;
+   }
++  else return false;
+ }
+  
+ /******************************************************************************
+@@ -397,15 +435,6 @@ svg_image_size (url image, int& w, int& h) {
+ * displaying and printing : png, eps, pdf
+ ******************************************************************************/
+ 
+-bool
+-wrap_qt_supports (url image) {
+-#ifdef QTTEXMACS
+-  return qt_supports (image);
+-#else
+-  (void) image; return false;
+-#endif
+-}
+-
+ void
+ image_to_eps (url image, url eps, int w_pt, int h_pt, int dpi) {
+   if (DEBUG_CONVERT) debug_convert << "image_to_eps ...";
+@@ -416,12 +445,9 @@ image_to_eps (url image, url eps, int w_pt, int h_pt, int dpi) {
+   string s= suffix (image);
+   // First try to preserve "vectorialness"
+ 
+-  // Note: since inkscape would most likely be the prog called to
+-  // translate svg we could at no additional cost allow other
+-  // vector formats supported by inkscape : ai, svgz, cdr, wmf ...
+-  if ((s == "svg") && !wrap_qt_supports (image) &&
+-      (call_scm_converter (image, eps))) return;
+-  
++  if ((s == "svg") && (call_scm_converter (image, eps))) return;
++  // see comment in image_to_pdf
++
+ #ifdef USE_GS
+   if (gs_supports (image)) {
+     if (DEBUG_CONVERT) debug_convert << " using gs" << LF;
+@@ -430,7 +456,8 @@ image_to_eps (url image, url eps, int w_pt, int h_pt, int dpi) {
+   }
+ #endif
+   //converters below will yield only raster images.
+-#ifdef QTTEXMACS 
++#if (defined(QTTEXMACS)) && (QT_VERSION < 0x050000)
++// PS support is gone in Qt5
+   if (qt_supports (image)) {
+     if (DEBUG_CONVERT) debug_convert << " using qt" << LF;
+     qt_image_to_eps (image, eps, w_pt, h_pt, dpi);
+@@ -462,8 +489,10 @@ image_to_pdf (url image, url pdf, int w_pt, int h_pt, int dpi) {
+   if (DEBUG_CONVERT) debug_convert << "image_to_pdf ... ";
+   string s= suffix (image);
+   // First try to preserve "vectorialness"
+-  if ((s == "svg") && !wrap_qt_supports (image) &&
+-      call_scm_converter (image, pdf)) return;
++  if ((s == "svg") && call_scm_converter (image, pdf)) return;
++  //for svg, at this point (2022), if available, Inkscape or rsvg-convert are
++  //preferred over Qt because they handle svg full; try using them via scm
++  //additional priorities/preferences regarding svg converters must be handled in scheme (init-images.scm)
+ #ifdef USE_GS
+   if (gs_supports (image)) {
+     if (DEBUG_CONVERT) debug_convert << " using gs "<<LF;
+@@ -471,7 +500,7 @@ image_to_pdf (url image, url pdf, int w_pt, int h_pt, int dpi) {
+     return;
+   }
+ #endif
+-  //converters below will yield only raster images.
++  //converters below will yield only raster images (except qt for svg).
+ #ifdef QTTEXMACS
+   if (qt_supports (image)) {
+     if (DEBUG_CONVERT) debug_convert << " using qt "<<LF;
+@@ -485,12 +514,15 @@ image_to_pdf (url image, url pdf, int w_pt, int h_pt, int dpi) {
+ 
+ void
+ image_to_png (url image, url png, int w, int h) {// IN PIXEL UNITS!
+-  string source_suffix= suffix (image);
++  string s= suffix (image);
+   if (DEBUG_CONVERT) debug_convert << "image_to_png ... ";
+   /* if (suffix (png) != "png") {
+      std_warning << concretize (png) << " has no .png suffix\n";
+      }
+   */
++  if ((s == "svg") &&  (call_scm_converter (image, png, w, h))) return;
++      //see comment in image_to_pdf
++      //When available, also use scm converter for on-creen display, for consistency with printing.
+ #ifdef MACOSX_EXTENSIONS
+   //cout << "mac convert " << image << ", " << png << "\n";
+   if (mac_supports (image)) {
+@@ -512,7 +544,7 @@ image_to_png (url image, url png, int w, int h) {// IN PIXEL UNITS!
+     if (gs_to_png (image, png, w, h)) return;
+   }
+ #endif
+-  if (call_scm_converter(image, png)) return;
++  if ((s != "svg") && call_scm_converter(image, png, w, h)) return;
+   call_imagemagick_convert (image, png, w, h);
+   if (! exists(png)) {
+     convert_error << image << " could not be converted to png" <<LF;
+@@ -521,18 +553,28 @@ image_to_png (url image, url png, int w, int h) {// IN PIXEL UNITS!
+ }
+ 
+ bool
+-call_scm_converter(url image, url dest) {
+-  if (DEBUG_CONVERT) debug_convert << " using scm" <<LF;
++call_scm_converter(url image, url dest, int w, int h) {
++  //for raster target, pass target w and h in pixels to the scm converter
++  // (otherwise the dpi preference (texmacs->image:raster-resolution) & default image size are used)
++  //for vector target, no need to specify w and h (defaulting to zero)
++  if (DEBUG_CONVERT) debug_convert << "trying scm..." <<LF;
+   if (as_bool (call ("file-converter-exists?",
+                      "x." * suffix (image),
+                      "x." * suffix (dest)))) {
+-    call ("file-convert", object (image), object (dest));
++    if ((w == 0) && (h == 0)) // w,h not specified : vector format
++      call ("file-convert", object (image), object (dest));
++    else { // w,h pixel numbers of the target raster image
++      call ("file-convert", object (image), object (dest),
++        eval("(cons 'width \"" * as_string(w) * "\")"),
++        eval("(cons 'height \""*as_string(h)*"\")"));
++    }
+     bool success= exists (dest);
+     if (success && DEBUG_CONVERT)
+       debug_convert << "scm file-convert " << concretize (image)
+                     << " -> " << concretize (dest) << LF;
+     return success;
+   }
++  if (DEBUG_CONVERT) debug_convert << "no scm converter found, or conversion failed" <<LF;
+   return false;
+ }
+ 
+@@ -544,8 +586,7 @@ call_scm_converter(url image, url dest) {
+ bool
+ has_image_magick (){
+ #ifdef OS_MINGW
+-	// Qt is used for converion on Windows
+-  static bool has_imagemagick = false;
++  static bool has_imagemagick= exists_in_path ("magick");
+ #else
+   static bool has_imagemagick= exists_in_path ("convert");
+ #endif
+@@ -557,9 +598,12 @@ imagemagick_cmd () {
+   if (has_image_magick()) {
+ #ifdef OS_MINGW
+     static string image_magick_cmd=
+-      sys_concretize (resolve_in_path ("convert"));
++      sys_concretize (resolve_in_path ("magick"));
++      // IM v>=7.0 only
++      // this avoids conflict with OS utility
+ #else
+     static string image_magick_cmd= "convert";
++    // compatible with IM <7 and >= 7
+ #endif
+     return copy (image_magick_cmd);
+   } 
+@@ -569,6 +613,7 @@ imagemagick_cmd () {
+ void
+ call_imagemagick_convert (url image, url dest, int w_pt, int h_pt, int dpi) {
+   if (has_image_magick ()) { 
++    if (DEBUG_CONVERT) debug_convert << "trying imagemagick..." <<LF;
+     string cmd= imagemagick_cmd ();
+     string s= suffix (image);
+     if (s != "pdf" && s != "ps" && s != "eps" &&
+@@ -589,10 +634,14 @@ call_imagemagick_convert (url image, url dest, int w_pt, int h_pt, int dpi) {
+ bool
+ imagemagick_image_size(url image, int& w, int& h, bool pt_units) {
+   if (!has_image_magick()) return false;
+-  else {		
+-    string cmd= "identify"; //ImageMagick utility
++  else {
+ #ifdef OS_MINGW
+-    cmd = sys_concretize(resolve_in_path(cmd));
++    string cmd= imagemagick_cmd ();
++    cmd << " identify";
++    // IM >= 7
++#else
++    string cmd= "identify"; //ImageMagick utility
++    // compatible with IM <7 and >= 7
+ #endif
+     cmd << " -ping -format \"%w %h %x %U\\n%y\"";
+     string sz= eval_system (cmd, image);
+@@ -617,11 +666,11 @@ imagemagick_image_size(url image, int& w, int& h, bool pt_units) {
+           ok= ok && read_line (sz, pos, unit);    
+           // according to the IM doc, units should be in [PixelsPerCentimeter,PixelsPerInch,Undefined]
+           // When "Undefined" IM gives the nonsensical default value of 72 "dots per Undefined"
+-          // svg is SCALABLE and hence logically gives "Undefined"; in that case we assume 90 dpi
+-          // so that the physical image size matches that of svg created with inkscape
++          // svg is SCALABLE and hence logically gives "Undefined"; in that case we assume 96 dpi
++          // so that the physical image size matches that of svg created with recent inkscape
+           if (unit == "PixelsPerCentimeter") ptperpix = 72/(2.54*densityx);
+           else if (unit == "PixelsPerInch") ptperpix = 72/densityx;
+-          else if (unit == "Undefined") ptperpix = 90/densityx; 
++          else if (unit == "Undefined") ptperpix = 96/densityx;
+           w= (int) w_px * ptperpix;
+           h= (int) h_px * ptperpix;
+           ok= ok && read_double (sz, pos, densityy);
+diff --git a/src/System/Files/image_files.hpp b/src/System/Files/image_files.hpp
+index 67214a0bc..8c7059ca4 100644
+--- a/src/System/Files/image_files.hpp
++++ b/src/System/Files/image_files.hpp
+@@ -26,11 +26,12 @@ string 	      ps_load (url image, bool conv=true);
+ void          image_size (url image, int& w, int& h);
+ void          pdf_image_size (url image, int& w, int& h);
+ void          svg_image_size (url image, int& w, int& h);
++bool          svg_is_tiny (url image);
+ void          image_to_eps (url image, url eps, int w_pt= 0, int h_pt= 0, int dpi= 0);
+ void          image_to_pdf (url image, url eps, int w_pt= 0, int h_pt= 0, int dpi= 0);
+ string        image_to_psdoc (url image);
+ void          image_to_png (url image, url png, int w= 0, int h= 0);
+-bool          call_scm_converter(url image, url dest);
++bool          call_scm_converter(url image, url dest, int w= 0, int h= 0);
+ void          call_imagemagick_convert(url image, url dest, int w_pt=0, int h_pt=0, int dpi=72);
+ bool          imagemagick_image_size(url image, int& w, int& h, bool pt_units=true);
+ bool          has_image_magick();
