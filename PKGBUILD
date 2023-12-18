@@ -58,6 +58,7 @@ prepare() {
   echo "TM_BUILD_DIR=${TM_BUILD_DIR}"
   echo "srcdir=${srcdir}"
 
+  # .../texmacsはある
   cd "${srcdir}/../${_pkgname}"
   echo "cwd=${srcdir}/../${_pkgname}"
 
@@ -65,9 +66,15 @@ prepare() {
   echo ${pkgver}
   echo ${pkgver} > SVNREV
 
+  # この時点で .../src/texmacs と .../texmacs は同じ内容で存在する。symlinkではない。
+  # Creating working copy of src svn repo... と出るのでprepare()前にcheckout物からcpされる？
+
+  # .../src/texmacs-buildは無いという前提
   if [ -d $TM_BUILD_DIR ]; then
     rm -rf $TM_BUILD_DIR
   fi 
+  # mv .../src/texmacs .../src/texmacs-build
+  # cpの間違いじゃないのかな？mvでもいいけどsymlinkあるしすてむでは
   mv "${srcdir}/${_pkgname}" $TM_BUILD_DIR
   # svn export "${srcdir}/${_pkgname}" $TM_BUILD_DIR
 
@@ -82,8 +89,8 @@ prepare() {
 
   echo "patching... my_current.patch"
   if [ ! -f src/TeXmacs-mingw-w64.patch.applied ]; then
-    git --work-tree=. apply ../../my_current.patch #needed for binary file oxt
-    # git --work-tree=. apply ../TeXmacs-mingw-w64.patch
+    #git --work-tree=. apply ../../my_current.patch #needed for binary file oxt
+    git --work-tree=. apply ../../TeXmacs-mingw-w64.patch
     touch src/TeXmacs-mingw-w64.patch.applied
   fi
 
@@ -111,8 +118,8 @@ build() {
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
-    --with-guile="/mingw32/bin/guile-config" \
-    --with-qt="/mingw32/bin/" \
+    --with-guile="${MSYSTEM_PREFIX}/bin/guile-config" \
+    --with-qt="${MSYSTEM_PREFIX}/bin/" \
     --with-sparkle="/build/winsparkle/WinSparkle*" \
     #--enable-console \
     #--disable-qtpipes\
@@ -142,11 +149,11 @@ dlls_for_exes () {
     todo=${todo#* }
     case "$path" in ''|' ') continue;; esac
     for dll in $(objdump -p "$path" |
-      sed -n 's/^\tDLL Name: /mingw32\/bin\//p')
+      sed -n 's/^\tDLL Name: ${MSYSTEM_PREFIX}\/bin\//p')
     do
       if test -f "/"$dll ; then 
         # since all the dependencies have been resolved for
-        # building, if we do not find a dll in /mingw32/bin/
+        # building, if we do not find a dll in ${MSYSTEM_PREFIX}/bin/
         # it must be a Windows-provided dll and then we ignore it
         # otherwise we add it to the dlls to scan
         case "$dlls" in
@@ -162,14 +169,14 @@ dlls_for_exes () {
 
 # the additional programs we bundle with TeXmacs
 
-DEPS="/mingw32/bin/pdftocairo.exe \
- /mingw32/bin/rsvg-convert.exe \
- /mingw32/bin/hunspell.exe \
- /mingw32/bin/gswin32c.exe \
- /mingw32/bin/wget.exe \
+DEPS="${MSYSTEM_PREFIX}/bin/pdftocairo.exe \
+ ${MSYSTEM_PREFIX}/bin/rsvg-convert.exe \
+ ${MSYSTEM_PREFIX}/bin/hunspell.exe \
+ ${MSYSTEM_PREFIX}/bin/gswin32c.exe \
+ ${MSYSTEM_PREFIX}/bin/wget.exe \
  /build/winsparkle/WinSparkle.dll \
  /build/SumatraPDF/SumatraPDF.exe \
- /mingw32/bin/magick.exe"
+ ${MSYSTEM_PREFIX}/bin/magick.exe"
 
 PROGS="$DEPS  $TM_BUILD_DIR/TeXmacs/bin/texmacs.bin"
 
@@ -212,10 +219,10 @@ done
 mv $BUNDLE_DIR/bin/gswin32c.exe $BUNDLE_DIR/bin/gs.exe
 
 for PLUGIN in $QT_NEEDED_PLUGINS_LIST ; do
-  cp -r -f -u /mingw32/share/qt5/plugins/$PLUGIN $BUNDLE_DIR/bin
+  cp -r -f -u ${MSYSTEM_PREFIX}/share/qt5/plugins/$PLUGIN $BUNDLE_DIR/bin
 done
 mkdir $BUNDLE_DIR/bin/platforms
-cp -r -f -u /mingw32/share/qt5/plugins/platforms/qwindows.dll $BUNDLE_DIR/bin/platforms
+cp -r -f -u ${MSYSTEM_PREFIX}/share/qt5/plugins/platforms/qwindows.dll $BUNDLE_DIR/bin/platforms
 
 # pick up ice-9 for guile
 export GUILE_LOAD_PATH="${MINGW_PREFIX}/share/guile/1.8"
