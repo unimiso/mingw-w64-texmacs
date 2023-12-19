@@ -38,41 +38,47 @@ source=("${_pkgname}::git+https://github.com/unimiso/texmacs.git")
 provides=('texmacs')
 conflicts=('texmacs')
 
+export pkg_build_base=`pwd`
+echo "pkg_build_base=${pkg_build_base}"
+
 precond() {
+	echo "precond() cwd=${PWD}"
+
 	pacman -S --needed --noconfirm base python less openssh patch make tar diffutils ca-certificates \
 		git subversion mintty vim p7zip markdown winpty unrar mingw-w64-i686-toolchain base-devel
 
-	build_top=/build
+    export sdk_top=${pkg_build_base}/sdk
+    echo "sdk_top=${sdk_top}"
 
-	if [ ! -d $build_top ]; then
-	    mkdir -p $build_top
+	if [ ! -d $sdk_top ]; then
+	    mkdir -p $sdk_top
 	fi
 
-	if [ ! -d $build_top/mingw-w64-guile1.8 ]; then
-	    mkdir -p $build_top/mingw-w64-guile1.8
-	    cd $build_top/mingw-w64-guile1.8/
+	if [ ! -d $sdk_top/mingw-w64-guile1.8 ]; then
+	    mkdir -p $sdk_top/mingw-w64-guile1.8
+	    cd $sdk_top/mingw-w64-guile1.8/
 	    wget https://github.com/slowphil/mingw-w64-guile1.8/releases/download/v1.8.8-mingw-w64-i686-1/mingw-w64-i686-guile1.8-1.8.8-1-any.pkg.tar.xz
 	    pacman --noconfirm -U mingw-w64-i686-guile1.8-1.8.8-1-any.pkg.tar.xz
 	fi
 
-	if [ ! -d $build_top/inno ]; then
-	    mkdir -p $build_top/inno
-	    cd $build_top/inno/
-	    if [ ! -z $build_top/inno/innounp.exe ]; then
+	if [ ! -d $sdk_top/inno ]; then
+	    mkdir -p $sdk_top/inno
+	    cd $sdk_top/inno/
+	    if [ ! -z $sdk_top/inno/innounp.exe ]; then
 	        wget https://downloads.sourceforge.net/project/innounp/innounp/innounp%200.49/innounp049.rar
 	        unrar e innounp049.rar
 	        rm *.rar
 	    fi
-	    if [ ! -z $build_top/inno/inno_setup/ISCC.exe ]; then
+	    if [ ! -z $sdk_top/inno/inno_setup/ISCC.exe ]; then
 	        wget http://files.jrsoftware.org/is/6/innosetup-6.0.3.exe
 	        ./innounp.exe -dinno_setup -c{app} -v -x innosetup-6.0.3.exe
 	        rm innosetup-6.0.3.exe
 	    fi
 	fi
 
-	if [ ! -d $build_top/winsparkle ]; then
-	    mkdir $build_top/winsparkle
-	    cd $build_top/winsparkle
+	if [ ! -d $sdk_top/winsparkle ]; then
+	    mkdir $sdk_top/winsparkle
+	    cd $sdk_top/winsparkle
 	    wget https://github.com/vslavik/winsparkle/releases/download/v0.6.0/WinSparkle-0.6.0.zip
 	    7z x WinSparkle-0.6.0.zip
 	    rm *.zip
@@ -81,32 +87,34 @@ precond() {
 	    cp Release/* ..
 	fi
 
-	if [ ! -d $build_top/SumatraPDF ]; then
-	    mkdir $build_top/SumatraPDf
-	    cd $build_top/SumatraPDF
+	if [ ! -d $sdk_top/SumatraPDF ]; then
+	    mkdir $sdk_top/SumatraPDf
+	    cd $sdk_top/SumatraPDF
 	    wget https://kjkpub.nyc3.digitaloceanspaces.com/software/sumatrapdf/rel/SumatraPDF-3.1.2.zip
 	    7z x SumatraPDF-3.1.2.zip
 	    rm *.zip
 	fi
 
-	cd $build_top
-	if [ ! -d mingw-w64-texmacs ]; then
-	  git clone https://github.com/slowphil/mingw-w64-texmacs.git
+	if [ ! -d $sdk_top/7-zip_lzma ]; then
+	    mkdir $sdk_top/7-zip_lzma
+	    cd $sdk_top/7-zip_lzma
+	    wget https://www.7-zip.org/a/lzma2301.7z
+	    7z x lzma2301.7z
+	    rm *.7z
 	fi
-	cd $build_top/mingw-w64-texmacs
 
+	cd $sdk_top
+	# if [ ! -d mingw-w64-texmacs ]; then
+	#   git clone https://github.com/slowphil/mingw-w64-texmacs.git
+	# fi
+	# cd $sdk_top/mingw-w64-texmacs
 }
 
 prepare() {
-	export srcdir=`pwd`/src
-	echo "srcdir=${srcdir}"
-	if [ ! -d ${srcdir} ]; then
-		mkdir ${srcdir}
-	fi
-	export TM_BUILD_DIR="${srcdir}/${_pkgname}"
-	echo "TM_BUILD_DIR=${TM_BUILD_DIR}"
+	echo "prepare() cwd=${PWD}"
 
-	echo "cwd=${PWD}"
+    export TM_BUILD_DIR=${pkg_build_base}/${_pkgname}
+    echo "TM_BUILD_DIR=${TM_BUILD_DIR}"
 
 	if [ ! -d ${TM_BUILD_DIR} ]; then
 		git clone https://github.com/unimiso/texmacs.git ${TM_BUILD_DIR}
@@ -117,20 +125,20 @@ prepare() {
 
 	echo "patching... winsparkle_config.patch"
 	if [ ! -f src/winsparkle_config.patch.applied ]; then
-		patch -i ../../winsparkle_config.patch -p1
+		patch -i ${pkg_build_base}/winsparkle_config.patch -p1
 		touch src/winsparkle_config.patch.applied
 	fi
 
 	echo "patching... my_current.patch"
 	if [ ! -f src/TeXmacs-mingw-w64.patch.applied ]; then
-		git --work-tree=. apply ../../TeXmacs-mingw-w64.patch
+		git --work-tree=. apply ${pkg_build_base}/TeXmacs-mingw-w64.patch
 		touch src/TeXmacs-mingw-w64.patch.applied
 	fi
 
 	if test ! -d TeXmacs/misc/updater_key ; then
 		mkdir -p TeXmacs/misc/updater_key
 	fi
-	cp ../../slowphil_github_texmacs_updates_dsa_pub.pem packages/windows/dsa_pub.pem
+	cp ${pkg_build_base}/slowphil_github_texmacs_updates_dsa_pub.pem packages/windows/dsa_pub.pem
 
 	autoreconf
 	sed -i 's|#! /bin/sh|#! /bin/bash|' configure
@@ -141,9 +149,7 @@ prepare() {
 }
 
 build() {
-	echo "cwd=${PWD}"
-	echo "TM_BUILD_DIR=${TM_BUILD_DIR}"
-	echo "srcdir=${srcdir}"
+	echo "build() cwd=${PWD}"
 
     export GUILE_LOAD_PATH="${MINGW_PREFIX}/share/guile/1.8"
 
@@ -155,7 +161,7 @@ build() {
         --host=${MINGW_CHOST} \
         --with-guile="${MINGW_PREFIX}/bin/guile-config" \
         --with-qt="${MINGW_PREFIX}/bin/" \
-        --with-sparkle="/build/winsparkle/WinSparkle*" \
+        --with-sparkle="${sdk_top}/winsparkle/WinSparkle*" \
         #--enable-console \
         #--disable-qtpipes \
         #--enable-debug  # must not strip in this case (line 37 and 159) !!
@@ -165,8 +171,9 @@ build() {
 }
 
 package() {
-    export TM_BUILD_DIR="${srcdir}/${_pkgname}"
-    export BUNDLE_DIR="${srcdir}/distr/TeXmacs-Windows"
+	echo "package() cwd=${PWD}"
+
+    export BUNDLE_DIR="${pkg_build_base}/distr/TeXmacs-Windows"
 
     ###############################################################################
     # Make a Windows installer
@@ -183,9 +190,9 @@ package() {
             path=${todo%% *}
             todo=${todo#* }
             case "$path" in ''|' ') continue;; esac
-            for dll in $(objdump -p "$path" | sed -n -e 's|^\tDLL Name: ${MINGW_PREFIX}/bin/|p')
+            for dll in $(objdump -p "$path" | sed -n -e "s|^\tDLL Name: |${MINGW_PREFIX}/bin/|p")
             do
-                if test -f "/"$dll ; then 
+                if [ -f $dll ]; then 
                     # since all the dependencies have been resolved for
                     # building, if we do not find a dll in ${MINGW_PREFIX}/bin/
                     # it must be a Windows-provided dll and then we ignore it
@@ -206,8 +213,8 @@ package() {
         ${MINGW_PREFIX}/bin/hunspell.exe \
         ${MINGW_PREFIX}/bin/gswin32c.exe \
         ${MINGW_PREFIX}/bin/wget.exe \
-        /build/winsparkle/WinSparkle.dll \
-        /build/SumatraPDF/SumatraPDF.exe \
+        ${sdk_top}/winsparkle/WinSparkle.dll \
+        ${sdk_top}/SumatraPDF/SumatraPDF.exe \
         ${MINGW_PREFIX}/bin/magick.exe"
 
     PROGS="$DEPS  $TM_BUILD_DIR/TeXmacs/bin/texmacs.bin"
@@ -313,13 +320,13 @@ package() {
     svn export https://github.com/slowphil/zotexmacs/trunk/plugin/zotexmacs zotexmacs
 
 
-    if test -f /build/inno/inno_setup/ISCC.exe ; then
-        rm -rf ${srcdir}/distr/windows
-        /build/inno/inno_setup/ISCC.exe $TM_BUILD_DIR/packages/windows/TeXmacs.iss
+    if test -f ${sdk_top}/inno/inno_setup/ISCC.exe ; then
+        rm -rf ${pkg_build_base}/distr/windows
+        ${sdk_top}/inno/inno_setup/ISCC.exe $TM_BUILD_DIR/packages/windows/TeXmacs.iss
         TARGET="/texmacs_installer.exe"
-        if test -f ${srcdir}/distr/windows/TeXmacs-*.exe ; then
-            cp ${srcdir}/distr/windows/TeXmacs-*.exe ${srcdir}/distr/windows$TARGET 
-            mv ${srcdir}/distr/windows$TARGET /
+        if test -f ${pkg_build_base}/distr/windows/TeXmacs-*.exe ; then
+            cp ${pkg_build_base}/distr/windows/TeXmacs-*.exe ${pkg_build_base}/distr/windows$TARGET 
+            mv ${pkg_build_base}/distr/windows$TARGET /
             echo "Success! You will find the new installer at \"$(cygpath -aw $TARGET)\"." &&
             echo "It is an InnoSetup installer."
         fi
@@ -329,7 +336,7 @@ package() {
 
     #make a 7z installer 
     OPTS7="-m0=lzma -mx=9 -md=64M"
-    TMPPACK="${srcdir}/tmp.7z"
+    TMPPACK="${pkg_build_base}/tmp.7z"
     TARGET="/texmacs_installer.7z.exe"
 
     fileList="$(ls -dp -1 $BUNDLE_DIR/*)"
@@ -337,7 +344,7 @@ package() {
     echo "Creating archive" &&
         (cd / && 7za a $OPTS7 "$TMPPACK" $fileList) &&
         # /usr/bin/cat: /7zSD.sfx: No such file or directory &&
-        (cat "/7zSD.sfx" &&
+        (cat "$sdk_top/7-zip_lzma/bin/7zSD.sfx" &&
            echo ';!@Install@!UTF-8!' &&
            echo 'Title="TeXmacs for Windows"' &&
            echo 'BeginPrompt="This archive extracts TeXmacs for Windows"' &&
@@ -367,7 +374,17 @@ package() {
     #fi
 }
 
-# pushd ./ && precond ; popd
-# pushd ./ && prepare ; popd
-# pushd ./ && build ; popd
-pushd ./ && package ; popd
+pushd ./ > /dev/null
+    precond
+popd > /dev/null
+pushd ./ > /dev/null
+    prepare
+popd > /dev/null
+pushd ./ > /dev/null
+    build
+popd > /dev/null
+pushd ./ > /dev/null
+    package
+popd > /dev/null
+
+echo "All finished."
