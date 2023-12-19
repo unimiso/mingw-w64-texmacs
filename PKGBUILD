@@ -43,37 +43,20 @@ options=('!emptydirs' '!ccache' 'strip')
 provides=('texmacs')
 conflicts=('texmacs')
 
-# the function pkgver() does not seem to work. disabling. 
-#pkgver() {
-# cd "${srcdir}/../${_pkgname}"
-#  svn info | awk '/Revision/{r=$2}/Date/{gsub(/-/,"");d=$4}END{print d"."r}'
-#}
-
 prepare() {
-  export TM_BUILD_DIR="${srcdir}/${_pkgname}-build"
+  export TM_BUILD_DIR="${srcdir}/${_pkgname}"
   export BUNDLE_DIR="${srcdir}/distr/TeXmacs-Windows"
 
   # この時点で .../src/texmacs と .../texmacs は同じ内容で存在する。symlinkではない。
-  # Creating working copy of src svn repo... と出るのでprepare()前にcheckout物からcpされる？
+  # gitプロトコルの場合、.../texmacsは--mirror状態で.../src/texmacsがworking tree状態
+  # でも.../src/texmacsはgitリポジトリとしては認識できない。
+  # Creating working copy of src svn repo... と出るのでprepare()前になされる？
   echo "TM_BUILD_DIR=${TM_BUILD_DIR}"
   echo "srcdir=${srcdir}"
 
   # .../texmacsはある
   cd "${srcdir}/../${_pkgname}"
   echo "cwd=${srcdir}/../${_pkgname}"
-
-  pkgver="svn$(svnversion)+extras"
-  echo ${pkgver}
-  echo ${pkgver} > SVNREV
-
-  # .../src/texmacs-buildは無いという前提
-  if [ -d $TM_BUILD_DIR ]; then
-    rm -rf $TM_BUILD_DIR
-  fi 
-  # mv .../src/texmacs .../src/texmacs-build
-  # cpの間違いじゃないのかな？mvでもいいけどsymlinkあるしすてむでは
-  mv "${srcdir}/${_pkgname}" $TM_BUILD_DIR
-  # svn export "${srcdir}/${_pkgname}" $TM_BUILD_DIR
 
   cd $TM_BUILD_DIR
   echo "cwd=$TM_BUILD_DIR"
@@ -86,7 +69,6 @@ prepare() {
 
   echo "patching... my_current.patch"
   if [ ! -f src/TeXmacs-mingw-w64.patch.applied ]; then
-    #git --work-tree=. apply ../../my_current.patch #needed for binary file oxt
     git --work-tree=. apply ../../TeXmacs-mingw-w64.patch
     touch src/TeXmacs-mingw-w64.patch.applied
   fi
@@ -95,12 +77,10 @@ prepare() {
     mkdir -p TeXmacs/misc/updater_key
   fi
   cp ../../slowphil_github_texmacs_updates_dsa_pub.pem packages/windows/dsa_pub.pem
-  #sed -i 's|^SVNREV=\${SVNREV/:/_}|SVNREV='${pkgver}'|' configure.in
-  sed -i 's|^DEVEL_RELEASE="1"         # I think we should use|DEVEL_RELEASE=$SVNREV         # actually using|'  configure.in
 
   autoreconf
-
   sed -i 's|#! /bin/sh|#! /bin/bash|' configure
+
   # get exes that are no longer in current svn but still needed
   wget "https://svn.savannah.gnu.org/viewvc/*checkout*/texmacs/trunk/src/packages/windows/FullName.exe?revision=10795&pathrev=10795" -O packages/windows/FullName.exe
   wget "https://svn.savannah.gnu.org/viewvc/*checkout*/texmacs/trunk/src/packages/windows/winwallet.exe?revision=10795&pathrev=10795" -O packages/windows/winwallet.exe
@@ -115,8 +95,8 @@ build() {
     --prefix=${MINGW_PREFIX} \
     --build=${MINGW_CHOST} \
     --host=${MINGW_CHOST} \
-    --with-guile="${MSYSTEM_PREFIX}/bin/guile-config" \
-    --with-qt="${MSYSTEM_PREFIX}/bin/" \
+    --with-guile="${MINGW_PREFIX}/bin/guile-config" \
+    --with-qt="${MINGW_PREFIX}/bin/" \
     --with-sparkle="/build/winsparkle/WinSparkle*" \
     #--enable-console \
     #--disable-qtpipes\
@@ -128,7 +108,7 @@ build() {
 }
 
 package() {
-export TM_BUILD_DIR="${srcdir}/${_pkgname}-build"
+export TM_BUILD_DIR="${srcdir}/${_pkgname}"
 export BUNDLE_DIR="${srcdir}/distr/TeXmacs-Windows"
 
 ###############################################################################
@@ -146,11 +126,11 @@ dlls_for_exes () {
     todo=${todo#* }
     case "$path" in ''|' ') continue;; esac
     for dll in $(objdump -p "$path" |
-      sed -n 's/^\tDLL Name: ${MSYSTEM_PREFIX}\/bin\//p')
+      sed -n -e 's|^\tDLL Name: ${MINGW_PREFIX}/bin/|p')
     do
       if test -f "/"$dll ; then 
         # since all the dependencies have been resolved for
-        # building, if we do not find a dll in ${MSYSTEM_PREFIX}/bin/
+        # building, if we do not find a dll in ${MINGW_PREFIX}/bin/
         # it must be a Windows-provided dll and then we ignore it
         # otherwise we add it to the dlls to scan
         case "$dlls" in
@@ -166,14 +146,14 @@ dlls_for_exes () {
 
 # the additional programs we bundle with TeXmacs
 
-DEPS="${MSYSTEM_PREFIX}/bin/pdftocairo.exe \
- ${MSYSTEM_PREFIX}/bin/rsvg-convert.exe \
- ${MSYSTEM_PREFIX}/bin/hunspell.exe \
- ${MSYSTEM_PREFIX}/bin/gswin32c.exe \
- ${MSYSTEM_PREFIX}/bin/wget.exe \
+DEPS="${MINGW_PREFIX}/bin/pdftocairo.exe \
+ ${MINGW_PREFIX}/bin/rsvg-convert.exe \
+ ${MINGW_PREFIX}/bin/hunspell.exe \
+ ${MINGW_PREFIX}/bin/gswin32c.exe \
+ ${MINGW_PREFIX}/bin/wget.exe \
  /build/winsparkle/WinSparkle.dll \
  /build/SumatraPDF/SumatraPDF.exe \
- ${MSYSTEM_PREFIX}/bin/magick.exe"
+ ${MINGW_PREFIX}/bin/magick.exe"
 
 PROGS="$DEPS  $TM_BUILD_DIR/TeXmacs/bin/texmacs.bin"
 
@@ -216,10 +196,10 @@ done
 mv $BUNDLE_DIR/bin/gswin32c.exe $BUNDLE_DIR/bin/gs.exe
 
 for PLUGIN in $QT_NEEDED_PLUGINS_LIST ; do
-  cp -r -f -u ${MSYSTEM_PREFIX}/share/qt5/plugins/$PLUGIN $BUNDLE_DIR/bin
+  cp -r -f -u ${MINGW_PREFIX}/share/qt5/plugins/$PLUGIN $BUNDLE_DIR/bin
 done
 mkdir $BUNDLE_DIR/bin/platforms
-cp -r -f -u ${MSYSTEM_PREFIX}/share/qt5/plugins/platforms/qwindows.dll $BUNDLE_DIR/bin/platforms
+cp -r -f -u ${MINGW_PREFIX}/share/qt5/plugins/platforms/qwindows.dll $BUNDLE_DIR/bin/platforms
 
 # pick up ice-9 for guile
 export GUILE_LOAD_PATH="${MINGW_PREFIX}/share/guile/1.8"
