@@ -35,12 +35,10 @@ depends=(
           "${MINGW_PACKAGE_PREFIX}-poppler"
         )
 #source=("${_pkgname}::svn://svn.savannah.gnu.org/texmacs/trunk/src#revision=11260"  for a specific rev, otherwise latest
-source=("${_pkgname}::svn://svn.savannah.gnu.org/texmacs/trunk/src"
-        )
-sha1sums=('SKIP'
-		  )
-#source=("${_pkgname}::https://github.com/texmacs/texmacs.git")
+#source=("${_pkgname}::svn://svn.savannah.gnu.org/texmacs/trunk/src"
+source=("${_pkgname}::git+https://github.com/texmacs/texmacs.git")
 sha1sums=('SKIP')
+
 options=('!emptydirs' '!ccache' 'strip')
 provides=('texmacs')
 conflicts=('texmacs')
@@ -55,6 +53,8 @@ prepare() {
   export TM_BUILD_DIR="${srcdir}/${_pkgname}-build"
   export BUNDLE_DIR="${srcdir}/distr/TeXmacs-Windows"
 
+  # この時点で .../src/texmacs と .../texmacs は同じ内容で存在する。symlinkではない。
+  # Creating working copy of src svn repo... と出るのでprepare()前にcheckout物からcpされる？
   echo "TM_BUILD_DIR=${TM_BUILD_DIR}"
   echo "srcdir=${srcdir}"
 
@@ -65,9 +65,6 @@ prepare() {
   pkgver="svn$(svnversion)+extras"
   echo ${pkgver}
   echo ${pkgver} > SVNREV
-
-  # この時点で .../src/texmacs と .../texmacs は同じ内容で存在する。symlinkではない。
-  # Creating working copy of src svn repo... と出るのでprepare()前にcheckout物からcpされる？
 
   # .../src/texmacs-buildは無いという前提
   if [ -d $TM_BUILD_DIR ]; then
@@ -306,6 +303,7 @@ fileList="$(ls -dp -1 $BUNDLE_DIR/*)"
 
 echo "Creating archive" &&
 (cd / && 7za a $OPTS7 "$TMPPACK" $fileList) &&
+# /usr/bin/cat: /7zSD.sfx: No such file or directory &&
 (cat "/7zSD.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="TeXmacs for Windows"' &&
