@@ -36,7 +36,7 @@ depends=(
         )
 #source=("${_pkgname}::svn://svn.savannah.gnu.org/texmacs/trunk/src#revision=11260"  for a specific rev, otherwise latest
 #source=("${_pkgname}::svn://svn.savannah.gnu.org/texmacs/trunk/src"
-source=("${_pkgname}::git+https://github.com/texmacs/texmacs.git")
+source=("${_pkgname}::git+https://github.com/unimiso/texmacs.git")
 sha1sums=('SKIP')
 
 options=('!emptydirs' '!ccache' 'strip')
