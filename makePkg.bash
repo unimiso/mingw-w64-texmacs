@@ -173,7 +173,7 @@ build() {
 package() {
 	echo "package() cwd=${PWD}"
 
-    export BUNDLE_DIR="${pkg_build_base}/distr/TeXmacs-Windows"
+    export BUNDLE_DIR="${pkg_build_base}/distr"
 
     ###############################################################################
     # Make a Windows installer
@@ -320,30 +320,31 @@ package() {
     svn export https://github.com/slowphil/zotexmacs/trunk/plugin/zotexmacs zotexmacs
 
 
+    # -------------------------------------------------------
+
+    export INSTALLER_DIR=${pkg_build_base}/installer
+    if [ -d $INSTALLER_DIR ]; then
+        rm -rf ${INSTALLER_DIR}
+    fi
+    mkdir -p $INSTALLER_DIR
+
     if test -f ${sdk_top}/inno/inno_setup/ISCC.exe ; then
-        rm -rf ${pkg_build_base}/distr/windows
-        ${sdk_top}/inno/inno_setup/ISCC.exe $TM_BUILD_DIR/packages/windows/TeXmacs.iss
-        TARGET="/texmacs_installer.exe"
-        if test -f ${pkg_build_base}/distr/windows/TeXmacs-*.exe ; then
-            cp ${pkg_build_base}/distr/windows/TeXmacs-*.exe ${pkg_build_base}/distr/windows$TARGET 
-            mv ${pkg_build_base}/distr/windows$TARGET /
-            echo "Success! You will find the new installer at \"$(cygpath -aw $TARGET)\"." &&
+        ${sdk_top}/inno/inno_setup/ISCC.exe /O"${INSTALLER_DIR}" $TM_BUILD_DIR/packages/windows/TeXmacs.iss
+        if test -f ${INSTALLER_DIR}/TeXmacs-*.exe ; then
+            echo "Success! You will find the new installer at ${INSTALLER_DIR}" &&
             echo "It is an InnoSetup installer."
         fi
-
     fi
-    #else  #if the inno installer is all we want, uncomment (and adjust the 'fi's)
 
     #make a 7z installer 
     OPTS7="-m0=lzma -mx=9 -md=64M"
-    TMPPACK="${pkg_build_base}/tmp.7z"
-    TARGET="/texmacs_installer.7z.exe"
+    TMPPACK="${INSTALLER_DIR}/tmp.7z"
+    TARGET="${INSTALLER_DIR}/texmacs_installer.7z.exe"
 
-    fileList="$(ls -dp -1 $BUNDLE_DIR/*)"
-
+    cd ${BUNDLE_DIR}
+    fileList="$(ls -p -1)"
     echo "Creating archive" &&
-        (cd / && 7za a $OPTS7 "$TMPPACK" $fileList) &&
-        # /usr/bin/cat: /7zSD.sfx: No such file or directory &&
+        (7za a $OPTS7 "$TMPPACK" $fileList) &&
         (cat "$sdk_top/7-zip_lzma/bin/7zSD.sfx" &&
            echo ';!@Install@!UTF-8!' &&
            echo 'Title="TeXmacs for Windows"' &&
@@ -367,8 +368,8 @@ package() {
            #echo 'executeParameters="exit"' &&
            #echo 'OverwriteMode="2"' &&
            echo ';!@InstallEnd@!' &&
-           cat "$TMPPACK") > "$TARGET" &&
-        echo "Success! You will find the new installer at \"$(cygpath -aw $TARGET)\"." &&
+           cat "$TMPPACK") > $TARGET &&
+        echo "Success! You will find the new installer at $TARGET" &&
         echo "It is a self-extracting .7z archive." &&
         rm $TMPPACK
     #fi
