@@ -92,7 +92,7 @@ PROGS="$DEPS $TM_BUILD_DIR/TeXmacs/bin/texmacs.bin"
 
 # lookup all the Mingw32 ddls needed by Texmacs + additional programs
 # MINGW_DLLs_NEEDED=$(dlls_for_exes $PROGS)
-MINGW_DLLs_NEEDED=$(dlls_for_exes $TM_BUILD_DIR/TeXmacs/bin/texmacs.bin)
+MINGW_DLLs_NEEDED=$(dlls_for_exes $PROGS)
 echo "MINGW_DLLs_NEEDED=$MINGW_DLLs_NEEDED"
 
 for DLL in $MINGW_DLLs_NEEDED ; do
